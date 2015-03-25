@@ -7,17 +7,68 @@
 //
 
 #import "AlbumViewController.h"
+#import "AlbumCollectionViewCell.h"
+#import "AlbumViewModeClass.h"
+
 
 @interface AlbumViewController ()
 
+@property (nonatomic, strong) NSArray * photosArray;
+
 @end
+
+
 
 @implementation AlbumViewController
 
-- (void)viewDidLoad {
+
+
+- (void)viewDidLoad
+{
     [super viewDidLoad];
-    // Do any additional setup after loading the view.
+    
+    AlbumViewModeClass * albumViewMode = [[AlbumViewModeClass alloc] init];
+    [albumViewMode setBlockWithReturnBlock:^(id returnValue) {
+        _photosArray = returnValue;
+        [self.albumCollectionView reloadData];
+    } WithErrorBlock:^(id errorCode) {
+        
+    } WithFailureBlock:^{
+        
+    }];
+    
+    [albumViewMode fetchPhotosWithAlbum:AlbumTitle];
+    
+    
 }
+
+
+- (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
+{
+    return [self.photosArray count];
+}
+
+- (UICollectionViewCell *)collectionView:(UICollectionView *)collectionView cellForItemAtIndexPath:(NSIndexPath *)indexPath
+{
+    static NSString * collectionCellID = @"AlbumCell";
+    AlbumCollectionViewCell * collectionCell = (AlbumCollectionViewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:collectionCellID forIndexPath:indexPath];
+    
+    [collectionCell setValueWithMode:self.photosArray[indexPath.row]];
+   
+    
+    return collectionCell;
+}
+
+
+- (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
+{
+  
+    
+}
+
+
+
+
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];

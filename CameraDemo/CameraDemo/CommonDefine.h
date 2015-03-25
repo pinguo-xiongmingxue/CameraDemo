@@ -8,6 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+
+//定义返回请求数据的block类型
+typedef void (^ReturnValueBlock) (id returnValue);
+typedef void (^ErrorCodeBlock) (id errorCode);
+typedef void (^FailureBlock)();
+
+
 //默认相册名
 extern NSString * const AlbumTitle;
 

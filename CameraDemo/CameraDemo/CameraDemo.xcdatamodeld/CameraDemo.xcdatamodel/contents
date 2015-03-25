@@ -1,10 +1,16 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <model userDefinedModelVersionIdentifier="" type="com.apple.IDECoreDataModeler.DataModel" documentVersion="1.0" lastSavedToolsVersion="6751" systemVersion="14B25" minimumToolsVersion="Automatic" macOSVersion="Automatic" iOSVersion="Automatic">
+    <entity name="AlbumInfo" representedClassName="AlbumInfo" syncable="YES">
+        <attribute name="title" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="ablumToPhoto" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="PhotoInfo" inverseName="photoToAlbum" inverseEntity="PhotoInfo" syncable="YES"/>
+    </entity>
     <entity name="PhotoInfo" representedClassName="PhotoInfo" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
+        <relationship name="photoToAlbum" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AlbumInfo" inverseName="ablumToPhoto" inverseEntity="AlbumInfo" syncable="YES"/>
     </entity>
     <elements>
-        <element name="PhotoInfo" positionX="-63" positionY="-18" width="128" height="75"/>
+        <element name="PhotoInfo" positionX="-63" positionY="-18" width="128" height="88"/>
+        <element name="AlbumInfo" positionX="-63" positionY="0" width="128" height="73"/>
     </elements>
 </model>

@@ -1,19 +1,18 @@
 //
-//  PhotoInfo.m
+//  AlbumInfo.m
 //  CameraDemo
 //
 //  Created by pinguo on 15/3/25.
 //  Copyright (c) 2015年 pinguo. All rights reserved.
 //
 
-#import "PhotoInfo.h"
 #import "AlbumInfo.h"
+#import "PhotoInfo.h"
 
 
-@implementation PhotoInfo
+@implementation AlbumInfo
 
-@dynamic address;
-@dynamic name;
-@dynamic photoToAlbum;
+@dynamic title;
+@dynamic ablumToPhoto;
 
 @end

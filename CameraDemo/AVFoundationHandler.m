@@ -8,6 +8,10 @@
 
 #import "AVFoundationHandler.h"
 
+@interface AVFoundationHandler ()<AVCaptureVideoDataOutputSampleBufferDelegate>
+
+@end
+
 @implementation AVFoundationHandler
 
 +(instancetype)shareInstance
@@ -30,31 +34,166 @@
     return self;
 }
 
+
++ (BOOL)isAuthorizatonToUseCamera
+{
+    __block BOOL isAvalible = NO;
+    AVAuthorizationStatus  authStatus = [AVCaptureDevice authorizationStatusForMediaType:AVMediaTypeVideo];
+    switch (authStatus) {
+        case AVAuthorizationStatusNotDetermined:{
+            [AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo completionHandler:^(BOOL granted) {
+                if (granted) {
+                    
+                    // 不用处理
+                    isAvalible = YES;
+                }else{
+                    
+                   //提示不授权，无法使用。
+                    isAvalible = NO;
+                }
+            }];
+            
+            break;
+        }
+        case AVAuthorizationStatusAuthorized:{
+            
+            // 不用处理
+            isAvalible = YES;
+            break;
+        }
+        case AVAuthorizationStatusDenied:
+        case AVAuthorizationStatusRestricted:{
+            
+            isAvalible = NO;
+            //提示去授权
+            
+            break;
+        }
+        
+    }
+    return isAvalible;
+}
+
+
+#pragma mark - SetUp AVFoundation
+
+- (void)setUpCaptureDevice
+{
+    if (!self.avCaptureDevice) {
+        self.avCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+    }
+
+}
+
+- (void)setUpDeviceInput
+{
+    if (!self.avDeviceInput) {
+        [self setUpCaptureDevice];
+        NSError * error = nil;
+        self.avDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:self.avCaptureDevice error:&error];
+    }
+   
+}
+
+- (void)setUpStillImageOutPut
+{
+    if (!self.stillImageOutput) {
+        self.stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
+    }
+    
+    NSDictionary * outputSetting = [[NSDictionary alloc] initWithObjectsAndKeys:AVVideoCodecJPEG,AVVideoCodecKey, nil];
+    [self.stillImageOutput setOutputSettings:outputSetting];
+    
+}
+
+- (void)setUpVideoDataOutPut
+{
+    if (!self.videoDataOutput) {
+        self.videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
+    }
+    
+//    int x = kCVPixelFormatType_32BGRA;
+//    NSString * str = [NSString stringWithFormat:@"%@",@(x)];
+//    NSDictionary * outputSetting = [[NSDictionary alloc] initWithObjectsAndKeys:str,kCVPixelBufferPixelFormatTypeKey, nil];
+    
+    NSDictionary * outputSetting = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA],(id)kCVPixelBufferPixelFormatTypeKey, nil];
+  
+    self.videoDataOutput.videoSettings = outputSetting;
+    
+    self.videoDataOutput.alwaysDiscardsLateVideoFrames = YES;
+    
+     dispatch_queue_t queue = dispatch_queue_create("CameraVideoQueue", DISPATCH_QUEUE_SERIAL);
+    
+    [self.videoDataOutput setSampleBufferDelegate:self queue:queue];
+  
+}
+
+
+
+- (void)setUpCaptureSession
+{
+    if (!self.avCaptureSession) {
+         self.avCaptureSession = [[AVCaptureSession alloc] init];
+    }
+    
+    [self.avCaptureSession beginConfiguration];
+    
+    if ([self.avCaptureSession canSetSessionPreset:AVCaptureSessionPresetPhoto]) {
+        self.avCaptureSession.sessionPreset = AVCaptureSessionPresetPhoto;
+    }
+    
+    [self setUpDeviceInput];
+    if ([self.avCaptureSession canAddInput:self.avDeviceInput]) {
+        [self.avCaptureSession addInput:self.avDeviceInput];
+    }
+    
+    
+    //添加接口，设置不同的输出
+//    [self setUpVideoDataOutPut];
+//    
+//    if ([self.avCaptureSession canAddOutput:self.videoDataOutput]) {
+//        [self.avCaptureSession addOutput:self.videoDataOutput];
+//    }
+
+    [self setUpStillImageOutPut];
+    if ([self.avCaptureSession canAddOutput:self.stillImageOutput]) {
+        [self.avCaptureSession addOutput:self.stillImageOutput];
+    }
+    
+    
+    [self.avCaptureSession commitConfiguration];
+}
+
+
+
+
+
 - (void)initAVFoundationHandlerWithView:(UIView *)preView
 {
     effectiveScale = 1.0;
     
-    if (!self.avCaptureSession) {
-        self.avCaptureSession = [[AVCaptureSession alloc] init];
-    }
+    [self setUpCaptureSession];
     
     
 //    if ([self.avCaptureSession canSetSessionPreset:AVCaptureSessionPresetInputPriority]) {
 //        
 //    }
     
-    self.avCaptureSession.sessionPreset = AVCaptureSessionPresetInputPriority;
+ //   self.avCaptureSession.sessionPreset = AVCaptureSessionPresetInputPriority;
     
-    [self setDevicePosition:YES];
-    [self setFocus:.5f focusy:.5f];
-    [self setFlash:NO];
+//    [self setDevicePosition:YES];
+//    [self setFocus:.5f focusy:.5f];
+//    [self setFlash:NO];
     
-    [self createStillImageOutPut];
+ //   [self setUpStillImageOutPut];
+    
+//    
+//    if ([self.avCaptureSession canAddOutput:self.stillImageOutput]) {
+//        [self.avCaptureSession addOutput:self.stillImageOutput];
+//    }
     
     
-    if ([self.avCaptureSession canAddOutput:self.stillImageOutput]) {
-        [self.avCaptureSession addOutput:self.stillImageOutput];
-    }
+    
     
     self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.avCaptureSession];
     self.previewLayer.frame = preView.bounds;
@@ -75,16 +214,7 @@
     
 }
 
-- (void)createStillImageOutPut
-{
-    if (!self.stillImageOutput) {
-        self.stillImageOutput = [[AVCaptureStillImageOutput alloc] init];
-    }
-    
-    NSDictionary * outputSetting = [[NSDictionary alloc] initWithObjectsAndKeys:AVVideoCodecJPEG,AVVideoCodecKey, nil];
-    [self.stillImageOutput setOutputSettings:outputSetting];
-    
-}
+
 
 #pragma mark -- Founction 
 
@@ -106,9 +236,10 @@
 - (void)cameraOK
 {
     if (self.stillImageOutput == nil) {
-        [self createStillImageOutPut];
+        [self setUpStillImageOutPut];
         [self.avCaptureSession addOutput:self.stillImageOutput];
     }
+    
     AVCaptureConnection * videoConnection = nil;
     for (AVCaptureConnection * connection in self.stillImageOutput.connections) {
         for (AVCaptureInputPort * port in [connection inputPorts]) {
@@ -147,67 +278,164 @@
 //聚焦点设置
 - (void)setFocus:(float)focusx focusy:(float)focusy
 {
-    if ([self.avCaptureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
+    if ([self.avCaptureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus] || [self.avCaptureDevice isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
         NSError * error = nil;
         if ([self.avCaptureDevice lockForConfiguration:&error]) {
             CGPoint autofocusPoint = CGPointMake(focusx, focusy);
             [self.avCaptureDevice setFocusPointOfInterest:autofocusPoint];
             self.avCaptureDevice.focusMode = AVCaptureFocusModeAutoFocus;
-           // self.avCaptureDevice.whiteBalanceMode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
+         //   self.avCaptureDevice.whiteBalanceMode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
             [self.avCaptureDevice unlockForConfiguration];
         }
     }
 }
 
 //曝光
-- (void)setExposure:(BOOL)is
+- (void)setExposure:(ExposureMode)exposureMode
 {
-    if ([self.avCaptureDevice isExposureModeSupported:AVCaptureExposureModeAutoExpose]) {
-        NSError * error = nil;
-        if ([self.avCaptureDevice lockForConfiguration:&error]) {
-            [self.avCaptureDevice setExposureMode:AVCaptureExposureModeAutoExpose];
+    NSError * error = nil;
+    switch (exposureMode) {
+        case ExposureModeLocked:{
+            
+            if ([self.avCaptureDevice isExposureModeSupported:AVCaptureExposureModeLocked]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setExposureMode:AVCaptureExposureModeLocked];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
+                
+            }
+
+            
+            break;
         }
+        case ExposureModeAutoExpose:{
         
-        [self.avCaptureDevice unlockForConfiguration];
+            if ([self.avCaptureDevice isExposureModeSupported:AVCaptureExposureModeAutoExpose]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setExposureMode:AVCaptureExposureModeAutoExpose];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
+                
+            }
+            
+            
+            break;
+        }
+        case ExposureModeContinuousAutoExposure:{
         
+            if ([self.avCaptureDevice isExposureModeSupported:AVCaptureExposureModeContinuousAutoExposure]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setExposureMode:AVCaptureExposureModeContinuousAutoExposure];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
+                
+            }
+            
+            break;
+        }
+        case ExposureModeCustom:{
+        
+            //Indicates that the device should only adjust exposure according to user provided ISO, exposureDuration values.
+            
+            break;
+        }
     }
+    
 }
 
 //白平衡
-- (void)setWhiteBanlance:(BOOL)is
+- (void)setWhiteBanlance:(WhiteBalanceMode)whiteBalanceMode
 {
-    if ([self.avCaptureDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeAutoWhiteBalance]) {
-        
+    NSError * error = nil;
+    switch (whiteBalanceMode) {
+        case WhiteBalanceModeLocked:{
+            
+            if ([self.avCaptureDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeLocked]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setWhiteBalanceMode:AVCaptureWhiteBalanceModeLocked];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
+            }
+            
+            break;
+        }
+        case WhiteBalanceModeAutoWhiteBalance:{
+            
+            if ([self.avCaptureDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeAutoWhiteBalance]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setWhiteBalanceMode:AVCaptureWhiteBalanceModeAutoWhiteBalance];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
+            }
+            
+            break;
+        }
+        case WhiteBalanceModeContinuousAutoWhiteBalance:{
+            
+            if ([self.avCaptureDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setWhiteBalanceMode:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
+            }
+            
+            break;
+        }
     }
+   
 }
 
 
 //闪光
-- (void)setFlash:(BOOL)onOrOff
+- (void)setFlashMode:(FlashMode)flashMode
 {
-    if (onOrOff) {
-        if ([self.avCaptureDevice isFlashModeSupported:AVCaptureFlashModeOn]) {
-            NSError * error = nil;
-            if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                [self.avCaptureDevice setFlashMode:AVCaptureFlashModeAuto];
+    NSError * error = nil;
+    switch (flashMode) {
+        case FlashModeOff:{
+            
+            if ([self.avCaptureDevice isFlashModeSupported:AVCaptureFlashModeOff]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setFlashMode:AVCaptureFlashModeOff];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
             }
-            [self.avCaptureDevice unlockForConfiguration];
+
+            
+            break;
         }
-    }else{
-        if ([self.avCaptureDevice isFlashModeSupported:AVCaptureFlashModeOff]) {
-            NSError * error = nil;
-            if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                [self.avCaptureDevice setFlashMode:AVCaptureFlashModeOff];
+        case FlashModeAtuo:{
+            
+            if ([self.avCaptureDevice isFlashModeSupported:AVCaptureFlashModeAuto]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setFlashMode:AVCaptureFlashModeAuto];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
             }
-            [self.avCaptureDevice unlockForConfiguration];
+            
+            break;
         }
+        case FlashModeOn:{
+      
+            if ([self.avCaptureDevice isFlashModeSupported:AVCaptureFlashModeOn]) {
+                if ([self.avCaptureDevice lockForConfiguration:&error]) {
+                    [self.avCaptureDevice setFlashMode:AVCaptureFlashModeOn];
+                }
+                [self.avCaptureDevice unlockForConfiguration];
+            }
+            
+            break;
+        }
+            
+
     }
+
 }
 
 //切换镜头
 - (void)setDevicePosition:(BOOL)backOrFront
 {
     [self.avCaptureSession beginConfiguration];
+    
     if (self.avCaptureSession != nil) {
         [self.avCaptureSession removeInput:self.avDeviceInput];
     }
@@ -223,17 +451,9 @@
         }
     }
     
-    if (self.avCaptureDevice == nil) {
-        self.avCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
-        
-    }
+   // [self setUpCaptureDevice];
     
-    NSError * error = nil;
-    self.avDeviceInput = [AVCaptureDeviceInput deviceInputWithDevice:self.avCaptureDevice error:&error];
-    
-    if (!self.avDeviceInput) {
-        self.avDeviceInput = nil;
-    }
+    [self setUpDeviceInput];
     
     [self.avCaptureSession addInput:self.avDeviceInput];
     [self.avCaptureSession commitConfiguration];
@@ -261,7 +481,14 @@
 }
 
 
+#pragma mark - AVCaptureVideoDataOutputSampleBufferDelegate
 
+- (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
+{
+    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    
+    
+}
 
 
 

@@ -12,9 +12,9 @@
 #import "BlocksKit+UIKit.h"
 #import "AVFoundationHandler.h"
 #import "DateHandler.h"
-#import "CommonDefine.h"
 #import "ImageCacheHandler.h"
 #import "PhotoHandler.h"
+#import "CameraViewModeClass.h"
 
 @interface ViewController ()<AVFoundationHandlerDelegate>
 {
@@ -25,7 +25,8 @@
 @property (weak, nonatomic) IBOutlet UIView *bottomView;
 @property (weak, nonatomic) IBOutlet UIButton *cameraOkBtn;
 @property (weak, nonatomic) IBOutlet UIButton *directionBtn;
-@property (weak, nonatomic) IBOutlet UIImageView *preImageView;
+@property (weak, nonatomic) IBOutlet UIButton *preImageBtn;
+
 
 
 @end
@@ -51,6 +52,9 @@
 - (void)viewDidLoad
 {
     [super viewDidLoad];
+    
+    
+    
     
 //    [self.cameraView mas_makeConstraints:^(MASConstraintMaker *make) {
 //        make.top.equalTo(self.view);
@@ -101,6 +105,14 @@
     [_AVHandler cameraOK];
 }
 
+- (IBAction)preImageBtnClick:(id)sender
+{
+    CameraViewModeClass * cameraViewMode = [[CameraViewModeClass alloc] init];
+    [cameraViewMode photoDetailWithViewController:self];
+    
+}
+
+
 #pragma mark - AVFoundationHandlerDelegate
 
 - (void)postImageData:(NSData *)imageData
@@ -110,7 +122,7 @@
     UIImage * newImage = [UIImage imageWithData:imageData];
     [self storeImageToDiskWithImage:newImage];
     
-    self.preImageView.image = newImage;
+    [self.preImageBtn setBackgroundImage:newImage forState:UIControlStateNormal];
     
     [_AVHandler startVideo];
 }
@@ -123,10 +135,17 @@
     [[ImageCacheHandler shareInstance] storeImage:image forKey:imageName appendPath:AlbumTitle];
 }
 
-- (void)saveImageToAlbum:(UIImage *)image
+
+
+
+
+#pragma mark - GestureRecognizer Delegate
+
+- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
 {
-    UIImageWriteToSavedPhotosAlbum(image, nil, nil, nil);
+    
 }
+
 
 
 - (void)didReceiveMemoryWarning

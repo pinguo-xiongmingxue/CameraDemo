@@ -9,6 +9,8 @@
 #import <Foundation/Foundation.h>
 
 
+#define WS(weakSelf) __weak __typeof(&*self)weakSelf = self;
+
 //定义返回请求数据的block类型
 typedef void (^ReturnValueBlock) (id returnValue);
 typedef void (^ErrorCodeBlock) (id errorCode);

@@ -38,6 +38,8 @@
 		64BF682E1AC0F953001535F5 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64BF682D1AC0F953001535F5 /* UIKit.framework */; };
 		64BF68301AC0F95F001535F5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64BF682F1AC0F95F001535F5 /* Foundation.framework */; };
 		64BF68341AC0FA1D001535F5 /* AVFoundationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 64BF68331AC0FA1D001535F5 /* AVFoundationHandler.m */; };
+		64C2A0D41AC3ECF300967689 /* CameraView.m in Sources */ = {isa = PBXBuildFile; fileRef = 64C2A0D31AC3ECF300967689 /* CameraView.m */; };
+		64C2A0D71AC4064300967689 /* MyNavigationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 64C2A0D61AC4064300967689 /* MyNavigationViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -91,7 +93,6 @@
 		64B9F66E1AC29FDE00FBD86B /* AlbumViewModeClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AlbumViewModeClass.m; sourceTree = "<group>"; };
 		64B9F6711AC2A34900FBD86B /* CameraViewModeClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraViewModeClass.h; sourceTree = "<group>"; };
 		64B9F6721AC2A34900FBD86B /* CameraViewModeClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraViewModeClass.m; sourceTree = "<group>"; };
-		64B9F6751AC2B63F00FBD86B /* pchFile.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = pchFile.pch; sourceTree = "<group>"; };
 		64BF681F1AC0F908001535F5 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		64BF68211AC0F90E001535F5 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		64BF68231AC0F91B001535F5 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -103,6 +104,10 @@
 		64BF682F1AC0F95F001535F5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		64BF68321AC0FA1D001535F5 /* AVFoundationHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVFoundationHandler.h; sourceTree = "<group>"; };
 		64BF68331AC0FA1D001535F5 /* AVFoundationHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVFoundationHandler.m; sourceTree = "<group>"; };
+		64C2A0D21AC3ECF300967689 /* CameraView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraView.h; sourceTree = "<group>"; };
+		64C2A0D31AC3ECF300967689 /* CameraView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraView.m; sourceTree = "<group>"; };
+		64C2A0D51AC4064300967689 /* MyNavigationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyNavigationViewController.h; sourceTree = "<group>"; };
+		64C2A0D61AC4064300967689 /* MyNavigationViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = MyNavigationViewController.m; sourceTree = "<group>"; };
 		843A8839822DFDA76A50AC85 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
@@ -170,7 +175,8 @@
 		6404ECD01AC01D050011BC5A /* CameraDemo */ = {
 			isa = PBXGroup;
 			children = (
-				64B9F6751AC2B63F00FBD86B /* pchFile.pch */,
+				64C2A0D51AC4064300967689 /* MyNavigationViewController.h */,
+				64C2A0D61AC4064300967689 /* MyNavigationViewController.m */,
 				640DC3031AC1665300E45999 /* CommonDefine.h */,
 				640DC3041AC1665300E45999 /* CommonDefine.m */,
 				6404ECD51AC01D050011BC5A /* AppDelegate.h */,
@@ -243,6 +249,8 @@
 		64B9F6701AC2A30B00FBD86B /* CameraView */ = {
 			isa = PBXGroup;
 			children = (
+				64C2A0D21AC3ECF300967689 /* CameraView.h */,
+				64C2A0D31AC3ECF300967689 /* CameraView.m */,
 				6404ECDB1AC01D050011BC5A /* ViewController.h */,
 				6404ECDC1AC01D050011BC5A /* ViewController.m */,
 				64B9F6711AC2A34900FBD86B /* CameraViewModeClass.h */,
@@ -430,9 +438,11 @@
 				6404ECD71AC01D050011BC5A /* AppDelegate.m in Sources */,
 				6404ECDD1AC01D050011BC5A /* ViewController.m in Sources */,
 				6404ECD41AC01D050011BC5A /* main.m in Sources */,
+				64C2A0D71AC4064300967689 /* MyNavigationViewController.m in Sources */,
 				640DC30B1AC16B9C00E45999 /* AlbumViewController.m in Sources */,
 				64B9F6731AC2A34900FBD86B /* CameraViewModeClass.m in Sources */,
 				640DC2F81AC152EF00E45999 /* ImageCacheHandler.m in Sources */,
+				64C2A0D41AC3ECF300967689 /* CameraView.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -508,7 +518,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -543,7 +553,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				VALIDATE_PRODUCT = YES;
@@ -555,11 +565,13 @@
 			baseConfigurationReference = 3B4F6B88B0EA7815C7ADDC30 /* Pods.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				GCC_PREFIX_HEADER = "$(SRCROOT)/pch.pchFile.pch";
+				CODE_SIGN_IDENTITY = "iPhone Developer: Qiang Zhu (N3YQQZE5KP)";
+				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = CameraDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "cf6396e9-9234-414e-a4d1-0bb0934eb936";
 			};
 			name = Debug;
 		};
@@ -568,11 +580,12 @@
 			baseConfigurationReference = 0F0FF2B5F1164EAC5749F283 /* Pods.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				GCC_PREFIX_HEADER = "$(SRCROOT)/pch.pchFile.pch";
+				GCC_PREFIX_HEADER = "";
 				INFOPLIST_FILE = CameraDemo/Info.plist;
-				IPHONEOS_DEPLOYMENT_TARGET = 7.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 8.0;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "cf6396e9-9234-414e-a4d1-0bb0934eb936";
 			};
 			name = Release;
 		};

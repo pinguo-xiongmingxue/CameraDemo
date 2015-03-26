@@ -15,18 +15,21 @@
 #import "ImageCacheHandler.h"
 #import "PhotoHandler.h"
 #import "CameraViewModeClass.h"
+#import "CameraView.h"
+#import "CommonDefine.h"
 
-@interface ViewController ()<AVFoundationHandlerDelegate>
+
+
+@interface ViewController ()
 {
-    AVFoundationHandler * _AVHandler;
+    //AVFoundationHandler * _AVHandler;
 }
 
-@property (weak, nonatomic) IBOutlet UIView *cameraView;
+@property (weak, nonatomic) IBOutlet CameraView *cameraView;
 @property (weak, nonatomic) IBOutlet UIView *bottomView;
 @property (weak, nonatomic) IBOutlet UIButton *cameraOkBtn;
 @property (weak, nonatomic) IBOutlet UIButton *directionBtn;
 @property (weak, nonatomic) IBOutlet UIButton *preImageBtn;
-
 
 
 @end
@@ -37,15 +40,19 @@
 {
     [super viewWillAppear:animated];
     
-    if (_AVHandler) {
-        [_AVHandler startVideo];
-    }
+//    if (_AVHandler) {
+//        [_AVHandler startVideo];
+//    }
+    
+    [[AVFoundationHandler shareInstance] startVideo];
 }
 
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    [_AVHandler stopVideo];
+  //  [_AVHandler stopVideo];
+    
+    [[AVFoundationHandler shareInstance] stopVideo];
 }
 
 
@@ -54,7 +61,17 @@
     [super viewDidLoad];
     
     
+    [self.cameraView setSession:[[AVFoundationHandler shareInstance] avCaptureSession]];
+    //[[AVFoundationHandler shareInstance] setAVFoundationHandlerWithView:self.cameraView];
+   
     
+    __weak __typeof(&*self)weakSelf = self;
+    [[AVFoundationHandler shareInstance] setCameraOKImageBlock:^(NSData * imageData) {
+        UIImage * newImage = [UIImage imageWithData:imageData];
+        [weakSelf storeImageToDiskWithImage:newImage];
+        
+        [weakSelf.preImageBtn setBackgroundImage:newImage forState:UIControlStateNormal];
+    }];
     
 //    [self.cameraView mas_makeConstraints:^(MASConstraintMaker *make) {
 //        make.top.equalTo(self.view);
@@ -70,14 +87,14 @@
 //    }];
     
     
-    
-    _AVHandler = [AVFoundationHandler shareInstance];
-    _AVHandler.delegate = self;
-    [_AVHandler initAVFoundationHandlerWithView:self.cameraView];
-    
-
-    
-    [_AVHandler startVideo];
+//    
+//    _AVHandler = [AVFoundationHandler shareInstance];
+//    _AVHandler.delegate = self;
+//    [_AVHandler initAVFoundationHandlerWithView:self.cameraView];
+//    
+//
+//    
+//    [_AVHandler startVideo];
     
     
     
@@ -102,7 +119,8 @@
 
 - (IBAction)cameraOkBtnClick:(id)sender
 {
-    [_AVHandler cameraOK];
+    //[_AVHandler cameraOK];
+    [[AVFoundationHandler shareInstance] cameraOK];
 }
 
 - (IBAction)preImageBtnClick:(id)sender
@@ -117,14 +135,14 @@
 
 - (void)postImageData:(NSData *)imageData
 {
-    [_AVHandler stopVideo];
+   // [_AVHandler stopVideo];
     
     UIImage * newImage = [UIImage imageWithData:imageData];
     [self storeImageToDiskWithImage:newImage];
     
     [self.preImageBtn setBackgroundImage:newImage forState:UIControlStateNormal];
     
-    [_AVHandler startVideo];
+   // [_AVHandler startVideo];
 }
 
 - (void)storeImageToDiskWithImage:(UIImage *)image

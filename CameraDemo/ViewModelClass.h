@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "CommonDefine.h"
 
 @interface ViewModelClass : NSObject
 

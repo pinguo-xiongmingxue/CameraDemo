@@ -9,6 +9,7 @@
 #import "AppDelegate.h"
 #import "CoreData+MagicalRecord.h"
 #import "ViewController.h"
+#import "MyNavigationViewController.h"
 
 @interface AppDelegate ()
 
@@ -26,11 +27,14 @@
     self.window.backgroundColor = [UIColor whiteColor];
     
     
-    UIViewController * baseViewController = [[UIStoryboard storyboardWithName:@"Main" bundle:nil]instantiateViewControllerWithIdentifier:@"baseController"];
+    UIViewController * baseViewController = [[UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]]instantiateViewControllerWithIdentifier:@"baseController"];
    
     
-    UINavigationController * nav = [[UINavigationController alloc] initWithRootViewController:baseViewController];
-    nav.navigationBarHidden = YES;
+    MyNavigationViewController * nav = [[MyNavigationViewController alloc] initWithRootViewController:baseViewController];
+    
+                                        
+                                        
+   // nav.navigationBarHidden = YES;
     
     self.window.rootViewController = nav;
     

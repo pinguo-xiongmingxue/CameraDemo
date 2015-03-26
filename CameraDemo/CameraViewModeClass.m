@@ -15,6 +15,7 @@
 - (void)photoDetailWithViewController:(UIViewController * )superViewController
 {
     AlbumViewController * av = [[UIStoryboard storyboardWithName:@"Main" bundle:nil]instantiateViewControllerWithIdentifier:@"AlbumViewController"];
+    superViewController.navigationController.navigationBarHidden = NO;
     [superViewController.navigationController pushViewController:av animated:YES];
 }
 

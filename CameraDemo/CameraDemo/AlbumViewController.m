@@ -27,9 +27,11 @@
 {
     [super viewDidLoad];
     
+    
     AlbumViewModeClass * albumViewMode = [[AlbumViewModeClass alloc] init];
     [albumViewMode setBlockWithReturnBlock:^(id returnValue) {
         _photosArray = returnValue;
+        NSLog(@"photoArray number: %d",_photosArray.count);
         [self.albumCollectionView reloadData];
     } WithErrorBlock:^(id errorCode) {
         
@@ -41,7 +43,6 @@
     
     
 }
-
 
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {

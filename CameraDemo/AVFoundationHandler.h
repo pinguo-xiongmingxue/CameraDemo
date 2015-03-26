@@ -13,6 +13,7 @@
 #import <AVFoundation/AVVideoSettings.h>
 #import <UIKit/UIKit.h>
 #import <CoreVideo/CVPixelBuffer.h>
+#import <AVFoundation/AVMediaFormat.h>
 
 //闪光
 typedef enum {
@@ -44,31 +45,48 @@ typedef enum {
 
 }FocusMode;
 
+//分辨率,有多种，这里用四种。
+typedef enum {
+    ResolutionModeDefault               = 0,   //默认AVCaptureSessionPresetPhoto
+    ResolutionModeLow                   = 1,
+    ResolutionModeMedium                = 2,
+    ResolutionModeHigh                  = 3,
+}ResolutionMode;
 
 
-@protocol AVFoundationHandlerDelegate <NSObject>
 
-- (void)postImageData:(NSData *)imageData;
-@end
+typedef void (^CameraImageBlock)(NSData * imageData);
 
 @interface AVFoundationHandler : NSObject
 {
     CMBufferQueueRef previewBufferQueue;
-    float effectiveScale;
+   // float effectiveScale;
 }
 
-@property (nonatomic, strong) AVCaptureSession * avCaptureSession;
-@property (nonatomic, strong) AVCaptureDevice * avCaptureDevice;
-@property (nonatomic, strong) AVCaptureStillImageOutput * stillImageOutput;
-@property (nonatomic, strong) AVCaptureVideoDataOutput * videoDataOutput;
-@property (nonatomic, strong) AVCaptureDeviceInput * avDeviceInput;
-@property (nonatomic, strong) AVCaptureVideoPreviewLayer * previewLayer;
+@property (nonatomic, strong) CameraImageBlock imageBlock;
 
-@property (nonatomic, assign) id<AVFoundationHandlerDelegate> delegate;
+@property (nonatomic, readonly) float minISO;
+@property (nonatomic, readonly) float maxISO;
+@property (nonatomic, strong, readonly) AVCaptureSession * avCaptureSession;
 
 + (instancetype)shareInstance;
 
-- (void)initAVFoundationHandlerWithView:(UIView *)preView;
+
+- (void)setCameraOKImageBlock:( void(^)(NSData * imageData)) imageBlock;
+
+/**
+ *  可以直接调用session现实相机
+ *
+ *  @return 返回一个创建好的AVCaptureSession
+ */
+- (AVCaptureSession *)captureSession;
+
+/**
+ *  传入一个显示相机的view
+ *
+ *  @param preView
+ */
+- (void)setAVFoundationHandlerWithView:(UIView *)preView;
 
 /**
  *  是否授权使用相机
@@ -103,17 +121,9 @@ typedef enum {
 /**
  *  闪光模式
  *
- *  @param flashMode 枚举类型
+ *  @param flashMode 枚举类型 默认NO
  */
 - (void)setFlashMode:(FlashMode)flashMode;
-
-/**
- *  聚焦点设置
- *
- *  @param focusx 在x方向的值，范围【0，1】
- *  @param focusy 在y方向的值，范围【0，1】
- */
-- (void)setFocus:(float)focusx focusy:(float)focusy;
 
 /**
  *  曝光模式
@@ -125,16 +135,60 @@ typedef enum {
 /**
  *  白平衡模式
  *
- *  @param whiteBalanceMode 白平衡模式，还需要添加一种用户手动的模式，更改色温。
+ *  @param whiteBalanceMode 白平衡模式，？还需要添加一种用户手动的模式，更改色温。
  */
 - (void)setWhiteBanlance:(WhiteBalanceMode)whiteBalanceMode;
 
+/**
+ *  聚焦模式
+ *
+ *  @param focusmode FocusMode枚举
+ */
+- (void)setFocusMode:(FocusMode)focusmode;
 
+/**
+ *  聚焦点设置
+ *
+ *  @param focusx 在x方向的值，范围[0，1]
+ *  @param focusy 在y方向的值，范围[0，1]
+ */
+- (void)setFocus:(float)focusx focusy:(float)focusy;
 
+/**
+ *  测光点
+ *
+ *  @param exposureX 在x方向的值，范围[0，1]
+ *  @param exposureY 在y方向的值，范围[0，1]
+ */
+- (void)setExposureX:(float)exposureX exposureY:(float)exposureY;
 
+/**
+ *  分辨率模式，共有四种，默认，低，中，高
+ *
+ *  @param resolution ResolutionMode模式的一种
+ */
+- (void)setResolutionMode:(ResolutionMode)resolution;
 
+/**
+ *  设置聚焦的距离
+ *
+ *  @param len float值。[0，1]
+ */
+- (void)setLensPosition:(float)len;
 
+/**
+ *  设置曝光时间
+ *
+ *  @param duration float [0,1]
+ */
+- (void)setExposureDuration:(float)duration;
 
+/**
+ *  ISO
+ *
+ *  @param isoValue float [minISO,maxISO]
+ */
+- (void)setISO:(float)isoValue;
 
 
 

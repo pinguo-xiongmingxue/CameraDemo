@@ -67,19 +67,19 @@ typedef void (^CameraImageBlock)(NSData * imageData);
 
 @property (nonatomic, readonly) float minISO;
 @property (nonatomic, readonly) float maxISO;
-@property (nonatomic, strong, readonly) AVCaptureSession * avCaptureSession;
+//@property (nonatomic, strong, readonly) AVCaptureSession * avCaptureSession;
 
 + (instancetype)shareInstance;
 
 
 - (void)setCameraOKImageBlock:( void(^)(NSData * imageData)) imageBlock;
 
-/**
- *  可以直接调用session现实相机
- *
- *  @return 返回一个创建好的AVCaptureSession
- */
-- (AVCaptureSession *)captureSession;
+///**
+// *  可以直接调用session现实相机
+// *
+// *  @return 返回一个创建好的AVCaptureSession
+// */
+//- (AVCaptureSession *)captureSession;
 
 /**
  *  传入一个显示相机的view

@@ -61,8 +61,8 @@
     [super viewDidLoad];
     
     
-    [self.cameraView setSession:[[AVFoundationHandler shareInstance] avCaptureSession]];
-    //[[AVFoundationHandler shareInstance] setAVFoundationHandlerWithView:self.cameraView];
+    //[self.cameraView setSession:[[AVFoundationHandler shareInstance] avCaptureSession]];
+    [[AVFoundationHandler shareInstance] setAVFoundationHandlerWithView:self.cameraView];
    
     
     __weak __typeof(&*self)weakSelf = self;

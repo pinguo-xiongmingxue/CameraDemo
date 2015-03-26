@@ -21,7 +21,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 
 @interface AVFoundationHandler ()<AVCaptureVideoDataOutputSampleBufferDelegate>
 
-@property (nonatomic, strong, readwrite) AVCaptureSession * avCaptureSession;
+@property (nonatomic, strong) AVCaptureSession * avCaptureSession;
 @property (nonatomic, strong) AVCaptureDevice * avCaptureDevice;
 @property (nonatomic, strong) AVCaptureStillImageOutput * stillImageOutput;
 @property (nonatomic, strong) AVCaptureVideoDataOutput * videoDataOutput;
@@ -210,15 +210,15 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 }
 
 
-- (AVCaptureSession *)avCaptureSession
-{
-    if (!self.avCaptureSession) {
-        [self setUpCaptureSession];
-        [self focusWithMode:FocusModeContinuousAutoFocus exposeWithMode:ExposureModeContinuousAutoExposure whiteBalanceMode:WhiteBalanceModeContinuousAutoWhiteBalance monitorSubjectAreaChange:NO];
-    }
-    
-    return self.avCaptureSession;
-}
+//- (AVCaptureSession *)avCaptureSession
+//{
+//    if (!self.avCaptureSession) {
+//        [self setUpCaptureSession];
+//        [self focusWithMode:FocusModeContinuousAutoFocus exposeWithMode:ExposureModeContinuousAutoExposure whiteBalanceMode:WhiteBalanceModeContinuousAutoWhiteBalance monitorSubjectAreaChange:NO];
+//    }
+//    
+//    return self.avCaptureSession;
+//}
 
 //- (AVCaptureSession *)captureSession
 //{

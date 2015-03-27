@@ -21,6 +21,7 @@
 		640DC3021AC1640200E45999 /* DateHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 640DC3011AC1640200E45999 /* DateHandler.m */; };
 		640DC3051AC1665300E45999 /* CommonDefine.m in Sources */ = {isa = PBXBuildFile; fileRef = 640DC3041AC1665300E45999 /* CommonDefine.m */; };
 		640DC30B1AC16B9C00E45999 /* AlbumViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 640DC30A1AC16B9C00E45999 /* AlbumViewController.m */; };
+		64B9ABFF1AC519D900CE0D2C /* ExposureSetVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9ABFE1AC519D900CE0D2C /* ExposureSetVC.m */; };
 		64B9F65C1AC2929B00FBD86B /* AlbumCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9F65B1AC2929B00FBD86B /* AlbumCollectionViewCell.m */; };
 		64B9F6601AC2964900FBD86B /* ViewModelClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9F65F1AC2964900FBD86B /* ViewModelClass.m */; };
 		64B9F6661AC29B1600FBD86B /* AlbumInfo.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9F6651AC29B1600FBD86B /* AlbumInfo.m */; };
@@ -79,6 +80,8 @@
 		640DC3041AC1665300E45999 /* CommonDefine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CommonDefine.m; sourceTree = "<group>"; };
 		640DC3091AC16B9C00E45999 /* AlbumViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlbumViewController.h; path = CameraDemo/AlbumViewController.h; sourceTree = "<group>"; };
 		640DC30A1AC16B9C00E45999 /* AlbumViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AlbumViewController.m; path = CameraDemo/AlbumViewController.m; sourceTree = "<group>"; };
+		64B9ABFD1AC519D900CE0D2C /* ExposureSetVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExposureSetVC.h; sourceTree = "<group>"; };
+		64B9ABFE1AC519D900CE0D2C /* ExposureSetVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExposureSetVC.m; sourceTree = "<group>"; };
 		64B9F65A1AC2929B00FBD86B /* AlbumCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlbumCollectionViewCell.h; path = CameraDemo/AlbumCollectionViewCell.h; sourceTree = "<group>"; };
 		64B9F65B1AC2929B00FBD86B /* AlbumCollectionViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AlbumCollectionViewCell.m; path = CameraDemo/AlbumCollectionViewCell.m; sourceTree = "<group>"; };
 		64B9F65E1AC2964900FBD86B /* ViewModelClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ViewModelClass.h; sourceTree = "<group>"; };
@@ -255,6 +258,8 @@
 				6404ECDC1AC01D050011BC5A /* ViewController.m */,
 				64B9F6711AC2A34900FBD86B /* CameraViewModeClass.h */,
 				64B9F6721AC2A34900FBD86B /* CameraViewModeClass.m */,
+				64B9ABFD1AC519D900CE0D2C /* ExposureSetVC.h */,
+				64B9ABFE1AC519D900CE0D2C /* ExposureSetVC.m */,
 			);
 			name = CameraView;
 			sourceTree = "<group>";
@@ -430,6 +435,7 @@
 				640DC3051AC1665300E45999 /* CommonDefine.m in Sources */,
 				64B9F6661AC29B1600FBD86B /* AlbumInfo.m in Sources */,
 				64B9F6691AC29B1700FBD86B /* PhotoInfo.m in Sources */,
+				64B9ABFF1AC519D900CE0D2C /* ExposureSetVC.m in Sources */,
 				64B9F66F1AC29FDE00FBD86B /* AlbumViewModeClass.m in Sources */,
 				640DC3021AC1640200E45999 /* DateHandler.m in Sources */,
 				64B9F66C1AC29CA400FBD86B /* AlbumHandler.m in Sources */,

@@ -9,9 +9,11 @@
 #import "AVFoundationHandler.h"
 
 
-static NSString * const ExpurationDurationKey  = @"ExpurationDurationKey";
-static NSString * const ISOChangeKey           = @"ISOChangeKey";
+static NSString * const ExposurationModeKey    = @"avDeviceInput.device.exposureMode";
+static NSString * const ExpurationDurationKey  = @"avDeviceInput.device.exposureDuration";
+static NSString * const ISOChangeKey           = @"avDeviceInput.device.ISO";
 
+static void * ExposureModeContext = &ExposureModeContext;
 static void * ExposureDurationContext = &ExposureDurationContext;
 static void * ISOContext = &ISOContext;
 
@@ -31,8 +33,9 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 @property (nonatomic) dispatch_queue_t sessionQueue;
 @property (nonatomic, readwrite) float minISO;
 @property (nonatomic, readwrite) float maxISO;
-
-
+@property (nonatomic, readwrite) ResolutionMode currentPixel;
+@property (nonatomic, readwrite) double currentExposureDuration;
+@property (nonatomic, readwrite) float currentISOValue;
 
 
 @end
@@ -99,6 +102,8 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     return isAvalible;
 }
 
+#pragma mark - Open Property
+
 - (float)minISO
 {
     if (self.avCaptureDevice) {
@@ -120,12 +125,78 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     _imageBlock = imageBlock;
 }
 
+- (FlashMode)currentFlashMode
+{
+    switch (self.avCaptureDevice.flashMode) {
+        case AVCaptureFlashModeAuto:
+            
+            return FlashModeAtuo;
+        case AVCaptureFlashModeOff:
+            
+            return FlashModeOff;
+        case AVCaptureFlashModeOn:
+            
+            return FlashModeOn;
+    }
+}
+
+- (FocusMode)currentFocusMode
+{
+    switch (self.avCaptureDevice.focusMode) {
+        case AVCaptureFocusModeLocked:
+            return FocusModeLocked;
+            break;
+        case AVCaptureFocusModeAutoFocus:
+            return FocusModeAutoFocus;
+            break;
+        case AVCaptureFocusModeContinuousAutoFocus:
+            return FocusModeContinuousAutoFocus;
+            break;
+    }
+}
+
+- (ExposureMode)currentExposureMode
+{
+    switch (self.avCaptureDevice.exposureMode) {
+        case AVCaptureExposureModeLocked:
+            return ExposureModeLocked;
+            break;
+        case AVCaptureExposureModeAutoExpose:
+            return ExposureModeAutoExpose;
+            break;
+        case AVCaptureExposureModeContinuousAutoExposure:
+            return ExposureModeContinuousAutoExposure;
+            break;
+        case AVCaptureExposureModeCustom:
+            return ExposureModeCustom;
+            break;
+    }
+}
+
+- (double)currentExposureDuration
+{
+   // AVCaptureExposureDurationCurrent
+    return _currentExposureDuration;
+}
+
+- (float)currentISOValue
+{
+    return _currentISOValue;
+}
+
+- (ResolutionMode)currentPixel
+{
+    return _currentPixel;
+}
+
 #pragma mark - SetUp AVFoundation
 
 - (void)setUpCaptureDevice
 {
     if (!self.avCaptureDevice) {
         self.avCaptureDevice = [AVCaptureDevice defaultDeviceWithMediaType:AVMediaTypeVideo];
+        [self setFocusMode:FocusModeAutoFocus];
+        [self setExposure:ExposureModeAutoExpose];
     }
 
 }
@@ -183,9 +254,11 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     
     [self.avCaptureSession beginConfiguration];
     
-    if ([self.avCaptureSession canSetSessionPreset:AVCaptureSessionPresetPhoto]) {
-        self.avCaptureSession.sessionPreset = AVCaptureSessionPresetPhoto;
-    }
+    [self setResolutionMode:ResolutionModeDefault];
+    
+//    if ([self.avCaptureSession canSetSessionPreset:AVCaptureSessionPresetPhoto]) {
+//        self.avCaptureSession.sessionPreset = AVCaptureSessionPresetPhoto;
+//    }
     
     [self setUpDeviceInput];
     if ([self.avCaptureSession canAddInput:self.avDeviceInput]) {
@@ -210,21 +283,6 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 }
 
 
-//- (AVCaptureSession *)avCaptureSession
-//{
-//    if (!self.avCaptureSession) {
-//        [self setUpCaptureSession];
-//        [self focusWithMode:FocusModeContinuousAutoFocus exposeWithMode:ExposureModeContinuousAutoExposure whiteBalanceMode:WhiteBalanceModeContinuousAutoWhiteBalance monitorSubjectAreaChange:NO];
-//    }
-//    
-//    return self.avCaptureSession;
-//}
-
-//- (AVCaptureSession *)captureSession
-//{
-//   
-//}
-
 
 - (void)setAVFoundationHandlerWithView:(UIView *)preView
 {
@@ -233,15 +291,14 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     [self setUpCaptureSession];
     [self focusWithMode:FocusModeContinuousAutoFocus exposeWithMode:ExposureModeContinuousAutoExposure whiteBalanceMode:WhiteBalanceModeContinuousAutoWhiteBalance monitorSubjectAreaChange:NO];
 
-    
+
     self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.avCaptureSession];
     self.previewLayer.frame = preView.bounds;
     self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
 //    [self.previewLayer setAffineTransform:CGAffineTransformMakeScale(effectiveScale, effectiveScale)];
     [preView.layer addSublayer:self.previewLayer];
-
-    
 }
+
 
 - (void)removeAVFoundation
 {
@@ -253,7 +310,6 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     if (self.previewLayer) {
         [self.previewLayer removeFromSuperlayer];
     }
-    
     
 }
 
@@ -346,39 +402,29 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 //聚焦模式
 - (void)setFocusMode:(FocusMode)focusmode
 {
-    NSError * error = nil;
+    AVCaptureFocusMode mode;
     switch (focusmode) {
-        case FocusModeLocked:{
-            if ([self.avCaptureDevice isFocusModeSupported:AVCaptureFocusModeLocked]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setFocusMode:AVCaptureFocusModeLocked];
-                    [self.avCaptureDevice unlockForConfiguration];
-                }
-                
-            }
+        case FocusModeLocked:
+            
+            mode = AVCaptureFocusModeLocked;
             break;
-        }
-        case FocusModeAutoFocus:{
-            if ([self.avCaptureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setFocusMode:AVCaptureFocusModeAutoFocus];
-                    [self.avCaptureDevice unlockForConfiguration];
-                }
-                
-            }
+        case FocusModeAutoFocus:
+            mode = AVCaptureFocusModeAutoFocus;
             break;
-        }
-        case FocusModeContinuousAutoFocus:{
-            if ([self.avCaptureDevice isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setFocusMode:AVCaptureFocusModeContinuousAutoFocus];
-                    [self.avCaptureDevice unlockForConfiguration];
-                }
-                
-            }
+            
+        case FocusModeContinuousAutoFocus:
+            mode = AVCaptureFocusModeContinuousAutoFocus;
             break;
+    }
+    
+    NSError * error = nil;
+    if ([self.avCaptureDevice isFocusModeSupported:mode]) {
+        if ([self.avCaptureDevice lockForConfiguration:&error]) {
+            [self.avCaptureDevice setFocusMode:mode];
+            [self.avCaptureDevice unlockForConfiguration];
         }
     }
+    
 }
 
 
@@ -390,7 +436,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
         if ([self.avCaptureDevice lockForConfiguration:&error]) {
             CGPoint autoExposurePoint = CGPointMake(exposureX, exposureY);
             [self.avCaptureDevice setExposurePointOfInterest:autoExposurePoint];
-            [self.avCaptureDevice setExposureMode:AVCaptureExposureModeAutoExpose];
+           // [self.avCaptureDevice setExposureMode:AVCaptureExposureModeAutoExpose];
             
             [self.avCaptureDevice unlockForConfiguration];
         }
@@ -400,66 +446,28 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 //曝光
 - (void)setExposure:(ExposureMode)exposureMode
 {
-    NSError * error = nil;
+    AVCaptureExposureMode mode;
     switch (exposureMode) {
-        case ExposureModeLocked:{
-            
-            if ([self.avCaptureDevice isExposureModeSupported:AVCaptureExposureModeLocked]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setExposureMode:AVCaptureExposureModeLocked];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-                
-            }
-
-            
+        case ExposureModeLocked:
+            mode = AVCaptureExposureModeLocked;
             break;
-        }
-        case ExposureModeAutoExpose:{
-        
-            if ([self.avCaptureDevice isExposureModeSupported:AVCaptureExposureModeAutoExpose]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setExposureMode:AVCaptureExposureModeAutoExpose];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-                
-            }
             
-            
+        case ExposureModeAutoExpose:
+            mode = AVCaptureExposureModeAutoExpose;
             break;
-        }
-        case ExposureModeContinuousAutoExposure:{
-        
-            if ([self.avCaptureDevice isExposureModeSupported:AVCaptureExposureModeContinuousAutoExposure]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setExposureMode:AVCaptureExposureModeContinuousAutoExposure];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-                
-            }
-            
+        case ExposureModeContinuousAutoExposure:
+            mode = AVCaptureExposureModeContinuousAutoExposure;
             break;
-        }
-        case ExposureModeCustom:{
-        
-            if ([self.avCaptureDevice isExposureModeSupported:AVCaptureExposureModeCustom]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setExposureMode:AVCaptureExposureModeCustom];
-
-                    [self.avCaptureDevice unlockForConfiguration];
-                }
-                
-               
-//                [self.avCaptureDevice setExposureModeCustomWithDuration:<#(CMTime)#> ISO:<#(float)#> completionHandler:^(CMTime syncTime) {
-//                    
-//                }];
-              //  self.avCaptureDevice setExposureTargetBias:<#(float)#> completionHandler:<#^(CMTime syncTime)handler#>
-            }
-            
-            
-            //Indicates that the device should only adjust exposure according to user provided ISO, exposureDuration values.
-            
+        case ExposureModeCustom:
+            mode = AVCaptureExposureModeCustom;
             break;
+    }
+    
+    NSError * error = nil;
+    if ([self.avCaptureDevice isExposureModeSupported:mode]) {
+        if ([self.avCaptureDevice lockForConfiguration:&error]) {
+            [self.avCaptureDevice setExposureMode:mode];
+            [self.avCaptureDevice unlockForConfiguration];
         }
     }
     
@@ -497,43 +505,28 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 //白平衡
 - (void)setWhiteBanlance:(WhiteBalanceMode)whiteBalanceMode
 {
-    NSError * error = nil;
+    AVCaptureWhiteBalanceMode mode;
     switch (whiteBalanceMode) {
-        case WhiteBalanceModeLocked:{
-            
-            if ([self.avCaptureDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeLocked]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setWhiteBalanceMode:AVCaptureWhiteBalanceModeLocked];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-            }
-            
+        case WhiteBalanceModeLocked:
+            mode = AVCaptureWhiteBalanceModeLocked;
             break;
-        }
-        case WhiteBalanceModeAutoWhiteBalance:{
-            
-            if ([self.avCaptureDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeAutoWhiteBalance]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setWhiteBalanceMode:AVCaptureWhiteBalanceModeAutoWhiteBalance];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-            }
-            
+        case WhiteBalanceModeAutoWhiteBalance:
+            mode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
             break;
-        }
-        case WhiteBalanceModeContinuousAutoWhiteBalance:{
             
-            if ([self.avCaptureDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setWhiteBalanceMode:AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-            }
-            
+        case WhiteBalanceModeContinuousAutoWhiteBalance:
+            mode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
             break;
+    }
+    
+    NSError * error = nil;
+    if ([self.avCaptureDevice isWhiteBalanceModeSupported:mode]) {
+        if ([self.avCaptureDevice lockForConfiguration:&error]) {
+            [self.avCaptureDevice setWhiteBalanceMode:mode];
+            [self.avCaptureDevice unlockForConfiguration];
         }
     }
-   
+    
 }
 
 
@@ -543,67 +536,65 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 - (void)setFlashMode:(FlashMode)flashMode
 {
     NSError * error = nil;
+    
+    AVCaptureFlashMode mode;
+    
     switch (flashMode) {
-        case FlashModeOff:{
-            
-            if ([self.avCaptureDevice isFlashModeSupported:AVCaptureFlashModeOff]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setFlashMode:AVCaptureFlashModeOff];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-            }
-
-            
+        case FlashModeOff:
+            mode = AVCaptureFlashModeOff;
             break;
-        }
-        case FlashModeAtuo:{
-            
-            if ([self.avCaptureDevice isFlashModeSupported:AVCaptureFlashModeAuto]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setFlashMode:AVCaptureFlashModeAuto];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-            }
-            
+        case FlashModeAtuo:
+            mode = AVCaptureFlashModeAuto;
             break;
-        }
-        case FlashModeOn:{
-      
-            if ([self.avCaptureDevice isFlashModeSupported:AVCaptureFlashModeOn]) {
-                if ([self.avCaptureDevice lockForConfiguration:&error]) {
-                    [self.avCaptureDevice setFlashMode:AVCaptureFlashModeOn];
-                }
-                [self.avCaptureDevice unlockForConfiguration];
-            }
-            
+        case FlashModeOn:
+            mode = AVCaptureFlashModeOn;
             break;
+    }
+    
+    if ([self.avCaptureDevice hasFlash] && [self.avCaptureDevice isFlashModeSupported:mode]) {
+        if ([self.avCaptureDevice lockForConfiguration:&error]) {
+            [self.avCaptureDevice setFlashMode:mode];
+            [self.avCaptureDevice unlockForConfiguration];
         }
-            
-
     }
 
 }
 
 //切换镜头
-- (void)setDevicePosition:(BOOL)backOrFront
+- (void)setDevicePositionChange
 {
     dispatch_async(self.sessionQueue, ^{
         
+        AVCaptureDevicePosition preferredPosition = AVCaptureDevicePositionUnspecified;
+        AVCaptureDevicePosition currentPosition = [self.avCaptureDevice position];
         
+        switch (currentPosition)
+        {
+            case AVCaptureDevicePositionUnspecified:
+                preferredPosition = AVCaptureDevicePositionBack;
+                break;
+            case AVCaptureDevicePositionBack:
+                preferredPosition = AVCaptureDevicePositionFront;
+                break;
+            case AVCaptureDevicePositionFront:
+                preferredPosition = AVCaptureDevicePositionBack;
+                break;
+        }
         
         NSArray * cameras = [AVCaptureDevice devicesWithMediaType:AVMediaTypeVideo];
         for (AVCaptureDevice * device in cameras) {
-            if (device.position == AVCaptureDevicePositionBack && backOrFront){
-                self.avCaptureDevice = device;
-                break;
-            }else if (device.position == AVCaptureDevicePositionFront && !backOrFront){
+            if (device.position == preferredPosition){
                 self.avCaptureDevice = device;
                 break;
             }
+        
         }
         
-    
-        [self setUpDeviceInput];
+        [self setFocusMode:FocusModeAutoFocus];
+        
+        [self.avCaptureSession removeInput:self.avDeviceInput];
+        
+        self.avDeviceInput  = [AVCaptureDeviceInput deviceInputWithDevice:self.avCaptureDevice error:nil];
         
         if ([self.avCaptureSession canAddInput:self.avDeviceInput]) {
             
@@ -630,44 +621,38 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     }
 }
 
-////缩放
-//- (void)imageToBigOrToSmall:(float)bigScale
-//{
-//    if (bigScale < 1.0) {
-//        bigScale = 1.0;
-//    }
-//    effectiveScale = bigScale;
-//    [CATransaction begin];
-//    [CATransaction setAnimationDuration:.025];
-//    [self.previewLayer setAffineTransform:CGAffineTransformMakeScale(bigScale, bigScale)];
-//    [CATransaction commit];
-//}
 
 //分辨率
 - (void)setResolutionMode:(ResolutionMode)resolution
 {
+
+    
     switch (resolution) {
         case ResolutionModeDefault:{
             if ([self.avCaptureSession canSetSessionPreset:AVCaptureSessionPresetPhoto]) {
                 self.avCaptureSession.sessionPreset = AVCaptureSessionPresetPhoto;
+                self.currentPixel = ResolutionModeDefault;
             }
             break;
         }
         case ResolutionModeLow:{
             if ([self.avCaptureSession canSetSessionPreset:AVCaptureSessionPresetLow]) {
                 self.avCaptureSession.sessionPreset = AVCaptureSessionPresetLow;
+                self.currentPixel = ResolutionModeLow;
             }
             break;
         }
         case ResolutionModeMedium:{
             if ([self.avCaptureSession canSetSessionPreset:AVCaptureSessionPresetMedium]) {
                 self.avCaptureSession.sessionPreset = AVCaptureSessionPresetMedium;
+                self.currentPixel = ResolutionModeMedium;
             }
             break;
         }
         case ResolutionModeHigh:{
             if ([self.avCaptureSession canSetSessionPreset:AVCaptureSessionPresetHigh]) {
                 self.avCaptureSession.sessionPreset = AVCaptureSessionPresetHigh;
+                self.currentPixel = ResolutionModeHigh;
             }
             break;
         }
@@ -720,17 +705,19 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 
 - (void)addObservers
 {
+    [self addObserver:self forKeyPath:ExposurationModeKey options:(NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew) context:ExposureModeContext];
     [self addObserver:self forKeyPath:ExpurationDurationKey options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:ExposureDurationContext];
     [self addObserver:self forKeyPath:ISOChangeKey options:NSKeyValueObservingOptionOld | NSKeyValueObservingOptionNew context:ISOContext];
     
     [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(subjectAreaDidChange:) name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
 
-    
 }
 
 - (void)removeObservers
 {
+    
     [[NSNotificationCenter defaultCenter] removeObserver:self name:AVCaptureDeviceSubjectAreaDidChangeNotification object:nil];
+    [self removeObserver:self forKeyPath:ExposurationModeKey context:ExposureModeContext];
     [self removeObserver:self forKeyPath:ExpurationDurationKey context:ExposureDurationContext];
     [self removeObserver:self forKeyPath:ISOChangeKey context:ISOContext];
     
@@ -739,7 +726,20 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 
 - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary *)change context:(void *)context
 {
-    if (context == ExposureDurationContext) {
+    if (context == ExposureModeContext) {
+        AVCaptureExposureMode oldMode = [change[NSKeyValueChangeOldKey] intValue];
+        if (oldMode == AVCaptureExposureModeCustom)
+        {
+            NSError *error = nil;
+            if ([self.avCaptureDevice lockForConfiguration:&error])
+            {
+                [self.avCaptureDevice setActiveVideoMaxFrameDuration:kCMTimeInvalid];
+                [self.avCaptureDevice setActiveVideoMinFrameDuration:kCMTimeInvalid];
+                [self.avCaptureDevice unlockForConfiguration];
+            }
+        }
+        
+    }else if (context == ExposureDurationContext) {
         
         double newDuration = CMTimeGetSeconds([change[NSKeyValueChangeNewKey] CMTimeValue]);
         if (self.avCaptureDevice.exposureMode != AVCaptureExposureModeCustom) {
@@ -750,8 +750,9 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
             double p = (newDuration - minDuration) / (maxDuratino - minDuration);
             
             //这里返回一个当前的曝光的时间值
-           double returnValue = pow(p, 1 / EXPOSURE_MINIMUM_DURATION);
-            
+            double returnValue = pow(p, 1 / EXPOSURE_MINIMUM_DURATION);
+            self.currentExposureDuration = returnValue;
+           // [[NSNotificationCenter defaultCenter] postNotificationName:@"ExposureDuration" object:nil userInfo:nil];
         }
         
         
@@ -761,6 +762,9 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
         float newISO = [change[NSKeyValueChangeNewKey] floatValue];
         if (self.avCaptureDevice.exposureMode != AVCaptureExposureModeCustom) {
             //这里返回一个当前的ISO值。newISO
+            
+            _currentISOValue = newISO;
+            
         }
         
     }

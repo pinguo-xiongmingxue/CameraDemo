@@ -60,26 +60,26 @@ typedef void (^CameraImageBlock)(NSData * imageData);
 @interface AVFoundationHandler : NSObject
 {
     CMBufferQueueRef previewBufferQueue;
-   // float effectiveScale;
 }
 
 @property (nonatomic, strong) CameraImageBlock imageBlock;
 
 @property (nonatomic, readonly) float minISO;
 @property (nonatomic, readonly) float maxISO;
-//@property (nonatomic, strong, readonly) AVCaptureSession * avCaptureSession;
+@property (nonatomic, readonly) double currentExposureDuration;
+@property (nonatomic, readonly) float currentISOValue;
+@property (nonatomic, readonly) FlashMode currentFlashMode;
+@property (nonatomic, readonly) ResolutionMode currentPixel;
+@property (nonatomic, readonly) FocusMode currentFocusMode;
+@property (nonatomic, readonly) ExposureMode currentExposureMode;
+@property (nonatomic, readonly) WhiteBalanceMode currentWBMode;
 
 + (instancetype)shareInstance;
 
 
 - (void)setCameraOKImageBlock:( void(^)(NSData * imageData)) imageBlock;
 
-///**
-// *  可以直接调用session现实相机
-// *
-// *  @return 返回一个创建好的AVCaptureSession
-// */
-//- (AVCaptureSession *)captureSession;
+
 
 /**
  *  传入一个显示相机的view
@@ -114,9 +114,8 @@ typedef void (^CameraImageBlock)(NSData * imageData);
 /**
  *  切换镜头
  *
- *  @param backOrFront YES，后面的镜头，NO，前面的镜头
  */
-- (void)setDevicePosition:(BOOL)backOrFront;
+- (void)setDevicePositionChange;
 
 /**
  *  闪光模式

@@ -8,10 +8,13 @@
 
 #import <UIKit/UIKit.h>
 
-@class AVCaptureSession;
 
 @interface CameraView : UIView
+{
+   
+}
 
-@property (nonatomic) AVCaptureSession * session;
+@property (nonatomic, strong) UIImageView * foucusImageView;
+
 
 @end

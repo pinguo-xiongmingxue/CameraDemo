@@ -12,5 +12,6 @@
 @interface PhotoHandler : NSObject
 
 + (PhotoInfo *)saveInfo:(NSDictionary *)infoDict withAlbum:(NSString *)ablumTitle;
++ (PhotoInfo *)getPhotoInfoWithAlbum:(NSString *)albumTitle;
 
 @end

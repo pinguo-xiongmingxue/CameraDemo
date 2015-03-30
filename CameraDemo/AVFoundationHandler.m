@@ -7,6 +7,7 @@
 //
 
 #import "AVFoundationHandler.h"
+#import <GLKit/GLKit.h>
 
 
 static NSString * const ExposurationModeKey    = @"avDeviceInput.device.exposureMode";
@@ -22,6 +23,9 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 
 
 @interface AVFoundationHandler ()<AVCaptureVideoDataOutputSampleBufferDelegate>
+{
+    BOOL _openOrcloseFilter;
+}
 
 @property (nonatomic, strong) AVCaptureSession * avCaptureSession;
 @property (nonatomic, strong) AVCaptureDevice * avCaptureDevice;
@@ -30,13 +34,23 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 @property (nonatomic, strong) AVCaptureDeviceInput * avDeviceInput;
 @property (nonatomic, strong) AVCaptureVideoPreviewLayer * previewLayer;
 
+@property (nonatomic, strong) CALayer * filterLayer;
+
 @property (nonatomic) dispatch_queue_t sessionQueue;
 @property (nonatomic, readwrite) float minISO;
 @property (nonatomic, readwrite) float maxISO;
 @property (nonatomic, readwrite) ResolutionMode currentPixel;
 @property (nonatomic, readwrite) double currentExposureDuration;
 @property (nonatomic, readwrite) float currentISOValue;
+@property (nonatomic, readwrite) NSInteger numbersOfSupportFormats;
+@property (nonatomic, readwrite) Float64 activeMaxFrameRate;
+@property (nonatomic, readwrite) Float64 activeMinFrameRate;
+@property (nonatomic, readwrite) FilterShowMode currentFilterMode;
 
+
+@property (nonatomic, strong) CIFilter * customFilter;
+@property (nonatomic, strong) CIContext * ciContext;
+@property (nonatomic, strong) CIImage * outPutImage;
 
 @end
 
@@ -58,6 +72,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     self = [super init];
     if (self) {
         _sessionQueue = dispatch_queue_create("sessionQueue", DISPATCH_QUEUE_SERIAL);
+        _openOrcloseFilter = NO;
     }
     return self;
 }
@@ -120,6 +135,28 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     return -1;
 }
 
+
+- (Float64)activeMaxFrameRate
+{
+    NSArray * array  = self.avCaptureDevice.activeFormat.videoSupportedFrameRateRanges;
+    AVFrameRateRange * range = [array lastObject];
+    return range.maxFrameRate;
+}
+
+- (Float64)activeMinFrameRate
+{
+    NSArray * array  = self.avCaptureDevice.activeFormat.videoSupportedFrameRateRanges;
+    AVFrameRateRange * range = [array lastObject];
+    return range.minFrameRate;
+}
+
+- (NSInteger)numbersOfSupportFormats
+{
+    return self.avCaptureDevice.formats.count;
+}
+
+
+
 - (void)setCameraOKImageBlock:( void(^)(NSData * imageData)) imageBlock
 {
     _imageBlock = imageBlock;
@@ -155,6 +192,25 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     }
 }
 
+- (WhiteBalanceMode)currentWBMode
+{
+    switch (self.avCaptureDevice.whiteBalanceMode) {
+        case AVCaptureWhiteBalanceModeLocked:
+            return WhiteBalanceModeLocked;
+            break;
+//        case AVCaptureWhiteBalanceModeAutoWhiteBalance:
+//            return WhiteBalanceModeAutoWhiteBalance;
+//            break;
+        case AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance:
+            return WhiteBalanceModeContinuousAutoWhiteBalance;
+            break;
+        default:
+            return WhiteBalanceModeContinuousAutoWhiteBalance;
+            break;
+    }
+  
+}
+
 - (ExposureMode)currentExposureMode
 {
     switch (self.avCaptureDevice.exposureMode) {
@@ -184,12 +240,81 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     return _currentISOValue;
 }
 
+//- (FilterShowMode)currentFilterMode
+//{
+//    return self.currentFilterMode;
+//}
+
 - (ResolutionMode)currentPixel
 {
     return _currentPixel;
 }
 
 #pragma mark - SetUp AVFoundation
+
+- (void)openOrCloseFilter:(BOOL)openOrcloseFilter
+{
+    if (openOrcloseFilter) {
+        _openOrcloseFilter = YES;
+     //   self.currentFilterMode = FilterShowModeNone;
+        [self setUpCIContext];
+        [self setUpCustomFilterMode:self.currentFilterMode];
+    }else{
+      //  self.currentFilterMode = FilterShowModeNone;
+        _openOrcloseFilter = NO;
+        self.customFilter = nil;
+        self.ciContext = nil;
+    }
+}
+
+- (void)setUpCIContext
+{
+    if (!self.ciContext) {
+    
+      //  CIContext * context;
+        EAGLContext * eaglContext = [[EAGLContext alloc] initWithAPI:kEAGLRenderingAPIOpenGLES2];
+    
+        self.ciContext = [CIContext contextWithEAGLContext:eaglContext
+                                            options:nil];
+        //@{kCIContextOutputColorSpace:[NSNull null]}
+    }
+}
+
+- (void)setUpCustomFilterMode:(FilterShowMode)mode
+{
+    NSString * filterName = nil;
+    switch (mode) {
+        case FilterShowModeNone:{
+            self.currentFilterMode = FilterShowModeNone;
+            break;
+        }
+        case FilterShowModeCustomFirst:{
+            filterName = @"CIColorInvert";
+            self.currentFilterMode = FilterShowModeCustomFirst;
+            break;
+        }
+        case FilterShowModeCustomSecond:{
+            filterName = @"CIPhotoEffectInstant";
+            self.currentFilterMode = FilterShowModeCustomSecond;
+            break;
+        }
+        case FilterShowModeCustomThird:{
+            filterName = @"CIPhotoEffectTransfer";
+            self.currentFilterMode = FilterShowModeCustomThird;
+            break;
+        }
+    }
+    
+    if (filterName == nil) {
+        self.customFilter = nil;
+    }else{
+        self.customFilter = [CIFilter filterWithName:filterName];
+    }
+    
+    
+}
+
+
 
 - (void)setUpCaptureDevice
 {
@@ -228,20 +353,13 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
         self.videoDataOutput = [[AVCaptureVideoDataOutput alloc] init];
     }
     
-//    int x = kCVPixelFormatType_32BGRA;
-//    NSString * str = [NSString stringWithFormat:@"%@",@(x)];
-//    NSDictionary * outputSetting = [[NSDictionary alloc] initWithObjectsAndKeys:str,kCVPixelBufferPixelFormatTypeKey, nil];
-    
     NSDictionary * outputSetting = [[NSDictionary alloc] initWithObjectsAndKeys:[NSNumber numberWithInt:kCVPixelFormatType_32BGRA],(id)kCVPixelBufferPixelFormatTypeKey, nil];
   
+
     self.videoDataOutput.videoSettings = outputSetting;
     
     self.videoDataOutput.alwaysDiscardsLateVideoFrames = YES;
     
-     dispatch_queue_t queue = dispatch_queue_create("CameraVideoQueue", DISPATCH_QUEUE_SERIAL);
-    
-    [self.videoDataOutput setSampleBufferDelegate:self queue:queue];
-  
 }
 
 
@@ -267,12 +385,16 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     
     
     //添加接口，设置不同的输出
-//    [self setUpVideoDataOutPut];
-//    
-//    if ([self.avCaptureSession canAddOutput:self.videoDataOutput]) {
-//        [self.avCaptureSession addOutput:self.videoDataOutput];
-//    }
-
+    [self setUpVideoDataOutPut];
+    
+    if ([self.avCaptureSession canAddOutput:self.videoDataOutput]) {
+        [self.avCaptureSession addOutput:self.videoDataOutput];
+    }
+    dispatch_queue_t queue = dispatch_queue_create("CameraVideoQueue", DISPATCH_QUEUE_SERIAL);
+    
+    [self.videoDataOutput setSampleBufferDelegate:self queue:queue];
+    
+    
     [self setUpStillImageOutPut];
     if ([self.avCaptureSession canAddOutput:self.stillImageOutput]) {
         [self.avCaptureSession addOutput:self.stillImageOutput];
@@ -291,12 +413,19 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     [self setUpCaptureSession];
     [self focusWithMode:FocusModeContinuousAutoFocus exposeWithMode:ExposureModeContinuousAutoExposure whiteBalanceMode:WhiteBalanceModeContinuousAutoWhiteBalance monitorSubjectAreaChange:NO];
 
-
+    [self openOrCloseFilter:YES];
+    
     self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.avCaptureSession];
     self.previewLayer.frame = preView.bounds;
     self.previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill;
 //    [self.previewLayer setAffineTransform:CGAffineTransformMakeScale(effectiveScale, effectiveScale)];
     [preView.layer addSublayer:self.previewLayer];
+    
+  
+    self.filterLayer = [CALayer layer];
+    self.filterLayer.frame = self.previewLayer.bounds;
+    [preView.layer insertSublayer:self.filterLayer above:self.previewLayer];
+    
 }
 
 
@@ -343,6 +472,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 //拍照
 - (void)cameraOK
 {
+    
     if (self.stillImageOutput == nil) {
         [self setUpStillImageOutPut];
         [self.avCaptureSession addOutput:self.stillImageOutput];
@@ -373,11 +503,20 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
         
         NSData * imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
         //[self.delegate postImageData:imageData];
+        [self stopVideo];
         self.imageBlock(imageData);
+        [self startVideo];
         
     }];
+
     
-    
+//    CGImageRef  cgImage = [self.ciContext createCGImage:self.outPutImage fromRect:[self.outPutImage extent]];
+//    UIImage * image = [UIImage imageWithCGImage:cgImage];
+//    NSData * data = UIImageJPEGRepresentation(image, 1);
+//    
+//    [self stopVideo];
+//    self.imageBlock(data);
+//    [self startVideo];
 }
 
 
@@ -390,9 +529,11 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     if ([self.avCaptureDevice isFocusModeSupported:AVCaptureFocusModeAutoFocus] || [self.avCaptureDevice isFocusModeSupported:AVCaptureFocusModeContinuousAutoFocus]) {
         NSError * error = nil;
         if ([self.avCaptureDevice lockForConfiguration:&error]) {
+            self.avCaptureDevice.focusMode = AVCaptureFocusModeAutoFocus;
             CGPoint autofocusPoint = CGPointMake(focusx, focusy);
             [self.avCaptureDevice setFocusPointOfInterest:autofocusPoint];
-            self.avCaptureDevice.focusMode = AVCaptureFocusModeAutoFocus;
+            [self.avCaptureDevice setExposureMode:AVCaptureExposureModeAutoExpose];
+            [self.avCaptureDevice setExposurePointOfInterest:autofocusPoint];
          //   self.avCaptureDevice.whiteBalanceMode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
             [self.avCaptureDevice unlockForConfiguration];
         }
@@ -510,13 +651,16 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
         case WhiteBalanceModeLocked:
             mode = AVCaptureWhiteBalanceModeLocked;
             break;
-        case WhiteBalanceModeAutoWhiteBalance:
-            mode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
-            break;
+//        case WhiteBalanceModeAutoWhiteBalance:
+//            mode = AVCaptureWhiteBalanceModeAutoWhiteBalance;
+//            break;
             
         case WhiteBalanceModeContinuousAutoWhiteBalance:
             mode = AVCaptureWhiteBalanceModeContinuousAutoWhiteBalance;
             break;
+    }
+    if ([self.avCaptureDevice isWhiteBalanceModeSupported:AVCaptureWhiteBalanceModeAutoWhiteBalance]) {
+        NSLog(@"support");
     }
     
     NSError * error = nil;
@@ -660,6 +804,51 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     
 }
 
+- (void)setFrameRate:(int)desiredFrameRate
+{
+    BOOL isSupported = NO;
+    for (AVFrameRateRange * range in self.avCaptureDevice.activeFormat.videoSupportedFrameRateRanges) {
+        if (range.maxFrameRate >= desiredFrameRate && range.minFrameRate <= desiredFrameRate) {
+            isSupported = YES;
+            break;
+        }
+    }
+    if (isSupported) {
+        NSError * error;
+        if ([self.avCaptureDevice lockForConfiguration:&error]) {
+            self.avCaptureDevice.activeVideoMaxFrameDuration = CMTimeMake(1, desiredFrameRate);
+            self.avCaptureDevice.activeVideoMinFrameDuration = CMTimeMake(1, desiredFrameRate);
+            [self.avCaptureDevice unlockForConfiguration];
+        }
+    }
+}
+
+- (void)configureFrameRate:(int)desiredFrameRate
+{
+    AVCaptureDeviceFormat * desiredFormat = nil;
+    for (AVCaptureDeviceFormat * format in self.avCaptureDevice.formats) {
+        for (AVFrameRateRange * range  in format.videoSupportedFrameRateRanges) {
+            if (range.maxFrameRate >= desiredFrameRate && range.minFrameRate <= desiredFrameRate) {
+                desiredFormat = format;
+                goto DesiredFormatFound;
+            }
+        }
+    }
+DesiredFormatFound:
+    if (desiredFormat) {
+        NSError * error = nil;
+        [self.avCaptureSession beginConfiguration];
+        if ([self.avCaptureDevice lockForConfiguration:&error]) {
+            self.avCaptureDevice.activeFormat = desiredFormat;
+            self.avCaptureDevice.activeVideoMaxFrameDuration = CMTimeMake(1, desiredFrameRate);
+            self.avCaptureDevice.activeVideoMinFrameDuration = CMTimeMake(1, desiredFrameRate);
+            [self.avCaptureDevice unlockForConfiguration];
+        }
+        [self.avCaptureSession commitConfiguration];
+    }
+    
+}
+
 
 #pragma mark - NotificationCenter
 
@@ -670,13 +859,47 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 
 
 
-
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDeegate
 
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
-    CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+    if (_openOrcloseFilter) {
+        CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+       
+        CGAffineTransform transform;
+        UIDeviceOrientation  orientation = [[UIDevice currentDevice] orientation];
+        if (orientation == UIDeviceOrientationPortrait) {
+            transform = CGAffineTransformMakeRotation(-M_PI/2.0);
+        }else if (orientation == UIDeviceOrientationPortraitUpsideDown){
+            transform = CGAffineTransformMakeRotation(M_PI/2.0);
+        }else if (orientation == UIDeviceOrientationLandscapeRight){
+            transform = CGAffineTransformMakeRotation(M_PI);
+        }else{
+            transform = CGAffineTransformMakeRotation(0);
+        }
+        
+        self.outPutImage = [[CIImage imageWithCVPixelBuffer:pixelBuffer] imageByApplyingTransform:transform];
+
+        
+        if (self.customFilter) {
+            [self.customFilter setDefaults];
+            [self.customFilter setValue:self.outPutImage forKey:kCIInputImageKey];
+            self.outPutImage = self.customFilter.outputImage;
+        
+        }
     
+        CGImageRef cgImageRef = [self.ciContext createCGImage:self.outPutImage fromRect:[self.outPutImage extent]];
+
+        dispatch_sync(dispatch_get_main_queue(), ^{
+    
+            self.filterLayer.contents = (__bridge id)(cgImageRef);
+
+            CGImageRelease(cgImageRef);
+        });
+    }else{
+        
+    }
+
     
 }
 
@@ -721,6 +944,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     [self removeObserver:self forKeyPath:ExpurationDurationKey context:ExposureDurationContext];
     [self removeObserver:self forKeyPath:ISOChangeKey context:ISOContext];
     
+    //可以添加activeVideoMaxFrameDuration和activeVideoMinFrameDuration的观察。
 }
 
 

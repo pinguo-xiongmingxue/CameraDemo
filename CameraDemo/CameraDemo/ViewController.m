@@ -18,12 +18,15 @@
 #import "CameraView.h"
 #import "CommonDefine.h"
 #import "ExposureSetVC.h"
+#import "FrameRateSetVC.h"
+#import "CameraFilterVC.h"
 
 
 
-@interface ViewController ()<ExposureSetVCDelegate>
+@interface ViewController ()<ExposureSetVCDelegate,CameraViewDelegate,FrameRateSetVCDelegate,CameraFilterVCDelegate>
 {
     //AVFoundationHandler * _AVHandler;
+    BOOL isFocusOrLightTest;   //YES 测焦   NO  测光
 }
 
 @property (weak, nonatomic) IBOutlet CameraView *cameraView;
@@ -38,7 +41,15 @@
 
 @property (weak, nonatomic) IBOutlet UIButton *WBBtn;
 
+@property (weak, nonatomic) IBOutlet UIButton *lightAndFocusBtn;
+
+@property (weak, nonatomic) IBOutlet UIButton *frameRateBtnClick;
+
+@property (weak, nonatomic) IBOutlet UIButton *filterBtn;
+
 @property (strong, nonatomic) ExposureSetVC * exposureSetView;
+@property (strong, nonatomic) FrameRateSetVC * frameRateSetView;
+@property (strong, nonatomic) CameraFilterVC * cameraFilterSetView;
 
 @end
 
@@ -77,26 +88,45 @@
    
 }
 
+- (void)cameraViewTapedPoint:(CGPoint)point
+{
+    if (isFocusOrLightTest) {
+         [[AVFoundationHandler shareInstance] setFocus:point.x focusy:point.y];
+    }else{
+         [[AVFoundationHandler shareInstance] setExposureX:point.x exposureY:point.y];
+    }
+   
+}
+
+- (void)isFocusOrLightTest:(BOOL *)isFocusOrLight
+{
+    *isFocusOrLight = isFocusOrLightTest;
+}
 
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 
-    
-    //[self.cameraView setSession:[[AVFoundationHandler shareInstance] avCaptureSession]];
+    isFocusOrLightTest = YES;
+    self.cameraView.delegate = self;
     
    [[AVFoundationHandler shareInstance] setAVFoundationHandlerWithView:self.cameraView];
+    [self.cameraView buildInterface];
     
     [self flashBtnChangeUI:[[AVFoundationHandler shareInstance] currentFlashMode]];
     [self resolutionBtnChangeUI:[[AVFoundationHandler shareInstance] currentPixel]];
     [self focusBtnChangeUI:[[AVFoundationHandler shareInstance] currentFocusMode]];
-   
+    [self whiteBanlanceBtnChangeUI:[[AVFoundationHandler shareInstance] currentWBMode]];
+    [self lightAndFocusBtnChangeUI];
    // [self.cameraView bringSubviewToFront:self.cameraOkBtn];
-
+    PhotoInfo * photoInfo = [PhotoHandler getPhotoInfoWithAlbum:AlbumTitle];
+     UIImage * image = [[ImageCacheHandler shareInstance] diskImageForKey:photoInfo.name withPath:photoInfo.address];
+    [self.preImageBtn setImage:image forState:UIControlStateNormal];
     
     __weak __typeof(&*self)weakSelf = self;
     [[AVFoundationHandler shareInstance] setCameraOKImageBlock:^(NSData * imageData) {
+        
         UIImage * newImage = [UIImage imageWithData:imageData];
         [weakSelf storeImageToDiskWithImage:newImage];
         
@@ -165,6 +195,44 @@
         case FocusModeContinuousAutoFocus:
             [self.FocusBtn setTitle:@"聚焦2" forState:UIControlStateNormal];
             break;
+    }
+}
+
+- (void)whiteBanlanceBtnChangeUI:(WhiteBalanceMode)mode
+{
+    [[AVFoundationHandler shareInstance] setWhiteBanlance:mode];
+//    switch (mode) {
+//        case WhiteBalanceModeLocked:
+//            [self.WBBtn setTitle:@"WB关" forState:UIControlStateNormal];
+//            break;
+//        case WhiteBalanceModeAutoWhiteBalance:
+//            [self.WBBtn setTitle:@"WB1" forState:UIControlStateNormal];
+//            break;
+//        case WhiteBalanceModeContinuousAutoWhiteBalance:
+//            [self.WBBtn setTitle:@"WB2" forState:UIControlStateNormal];
+//
+//    }
+    
+    switch (mode) {
+        case WhiteBalanceModeLocked:
+            [self.WBBtn setTitle:@"WB关" forState:UIControlStateNormal];
+            break;
+//        case WhiteBalanceModeAutoWhiteBalance:
+//            [self.WBBtn setTitle:@"WB1" forState:UIControlStateNormal];
+//            break;
+        case WhiteBalanceModeContinuousAutoWhiteBalance:
+            [self.WBBtn setTitle:@"WB1" forState:UIControlStateNormal];
+            
+    }
+}
+
+- (void)lightAndFocusBtnChangeUI
+{
+    //YES 测焦   NO  测光
+    if (isFocusOrLightTest) {
+        [self.lightAndFocusBtn setTitle:@"测光" forState:UIControlStateNormal];
+    }else{
+        [self.lightAndFocusBtn setTitle:@"测焦" forState:UIControlStateNormal];
     }
 }
 
@@ -248,6 +316,33 @@
     }
 }
 
+- (IBAction)whiteBalanceBtnClick:(id)sender
+{
+    WhiteBalanceMode mode = [[AVFoundationHandler shareInstance] currentWBMode];
+//    switch (mode) {
+//        case WhiteBalanceModeLocked:
+//            [self whiteBanlanceBtnChangeUI:WhiteBalanceModeAutoWhiteBalance];
+//            break;
+//        case WhiteBalanceModeAutoWhiteBalance:
+//            [self whiteBanlanceBtnChangeUI:WhiteBalanceModeContinuousAutoWhiteBalance];
+//            break;
+//        case WhiteBalanceModeContinuousAutoWhiteBalance:
+//            [self whiteBanlanceBtnChangeUI:WhiteBalanceModeLocked];
+//            break;
+//     
+//    }
+    
+    switch (mode) {
+        case WhiteBalanceModeLocked:
+            [self whiteBanlanceBtnChangeUI:WhiteBalanceModeContinuousAutoWhiteBalance];
+            break;
+        case WhiteBalanceModeContinuousAutoWhiteBalance:
+            [self whiteBanlanceBtnChangeUI:WhiteBalanceModeLocked];
+            break;
+            
+    }
+}
+
 - (IBAction)exposureBtnClick:(id)sender
 {
     if (!self.exposureSetView) {
@@ -263,13 +358,50 @@
           [self showAnimationWithView:self.exposureSetView.view];
     }
     
-  
 }
 
-- (IBAction)whiteBalanceBtnClick:(id)sender
+- (IBAction)frameRateBtnClick:(id)sender
 {
-    
+    if (!self.frameRateSetView) {
+        _frameRateSetView = [[UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]]instantiateViewControllerWithIdentifier:@"FrameRateSetVC"];
+        _frameRateSetView.view.frame = CGRectMake(0, self.view.frame.size.height, 320, 100);
+        _frameRateSetView.delegate = self;
+    }
+    [self.view addSubview:_frameRateSetView.view];
+    [[AVFoundationHandler shareInstance] openOrCloseFilter:YES];
+    if (self.frameRateSetView) {
+        [self showAnimationWithView:self.frameRateSetView.view];
+    }
 }
+
+
+- (IBAction)fliterBtnClick:(id)sender
+{
+    if (!self.cameraFilterSetView) {
+        _cameraFilterSetView = [[UIStoryboard storyboardWithName:@"Main" bundle:[NSBundle mainBundle]]instantiateViewControllerWithIdentifier:@"CameraFilterVC"];
+        _cameraFilterSetView.view.frame = CGRectMake(0, self.view.frame.size.height, 320, 100);
+        _cameraFilterSetView.delegate = self;
+    }
+    [self.view addSubview:_cameraFilterSetView.view];
+    if (self.cameraFilterSetView) {
+        [self showAnimationWithView:self.cameraFilterSetView.view];
+    }
+}
+
+- (IBAction)lightAndFocusBtnClick:(id)sender
+{
+    //YES 测焦   NO  测光
+    if (isFocusOrLightTest) {
+        isFocusOrLightTest = NO;
+    }else{
+        isFocusOrLightTest = YES;
+       
+    }
+     [self lightAndFocusBtnChangeUI];
+}
+
+
+
 
 #pragma mark - show Animation
 
@@ -305,6 +437,17 @@
     [self hideAnimationWithView:self.exposureSetView.view];
 }
 
+- (void)frameRateSetVCClosed:(FrameRateSetVC *)frameRateSetVC
+{
+    [self hideAnimationWithView:self.frameRateSetView.view];
+}
+
+- (void)cameraFilterVCClosed:(UIViewController *)cameraFilterVC
+{
+    //[[AVFoundationHandler shareInstance] openOrCloseFilter:NO];
+    [self hideAnimationWithView:self.cameraFilterSetView.view];
+}
+
 //
 //#pragma mark - AVFoundationHandlerDelegate
 //
@@ -330,14 +473,6 @@
 
 
 
-
-
-#pragma mark - GestureRecognizer Delegate
-
-- (void)touchesBegan:(NSSet *)touches withEvent:(UIEvent *)event
-{
-    
-}
 
 
 

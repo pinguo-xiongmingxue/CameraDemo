@@ -34,5 +34,16 @@
     return photoInfo;
 }
 
++ (PhotoInfo *)getPhotoInfoWithAlbum:(NSString *)albumTitle
+{
+    AlbumInfo * albumInfo = [AlbumInfo MR_findFirstByAttribute:@"title" withValue:albumTitle];
+    NSArray * arr = [[NSArray alloc] initWithArray:[albumInfo.ablumToPhoto allObjects]];
+    if ([arr count] != 0) {
+        return [arr objectAtIndex:0];
+    }
+    
+    return nil;
+}
+
 
 @end

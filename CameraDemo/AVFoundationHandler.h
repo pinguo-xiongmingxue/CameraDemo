@@ -33,7 +33,7 @@ typedef enum {
 //白平衡
 typedef enum {
     WhiteBalanceModeLocked                          = 0,
-    WhiteBalanceModeAutoWhiteBalance                = 1,
+ //   WhiteBalanceModeAutoWhiteBalance                = 1,
     WhiteBalanceModeContinuousAutoWhiteBalance      = 2
 }WhiteBalanceMode;
 
@@ -53,6 +53,12 @@ typedef enum {
     ResolutionModeHigh                  = 3,
 }ResolutionMode;
 
+typedef enum {
+    FilterShowModeNone                  = 0,
+    FilterShowModeCustomFirst           = 1,
+    FilterShowModeCustomSecond          = 2,
+    FilterShowModeCustomThird           = 3
+}FilterShowMode;
 
 
 typedef void (^CameraImageBlock)(NSData * imageData);
@@ -68,17 +74,20 @@ typedef void (^CameraImageBlock)(NSData * imageData);
 @property (nonatomic, readonly) float maxISO;
 @property (nonatomic, readonly) double currentExposureDuration;
 @property (nonatomic, readonly) float currentISOValue;
+@property (nonatomic, readonly) NSInteger numbersOfSupportFormats;
 @property (nonatomic, readonly) FlashMode currentFlashMode;
 @property (nonatomic, readonly) ResolutionMode currentPixel;
 @property (nonatomic, readonly) FocusMode currentFocusMode;
 @property (nonatomic, readonly) ExposureMode currentExposureMode;
 @property (nonatomic, readonly) WhiteBalanceMode currentWBMode;
+@property (nonatomic, readonly) Float64 activeMaxFrameRate;
+@property (nonatomic, readonly) Float64 activeMinFrameRate;
+@property (nonatomic, readonly) FilterShowMode currentFilterMode;
 
 + (instancetype)shareInstance;
 
 
 - (void)setCameraOKImageBlock:( void(^)(NSData * imageData)) imageBlock;
-
 
 
 /**
@@ -189,8 +198,33 @@ typedef void (^CameraImageBlock)(NSData * imageData);
  */
 - (void)setISO:(float)isoValue;
 
+/**
+ *  帧率
+ *
+ *  @param desiredFrameRate 当前activeFormat，支持的帧率的数值的倒数
+ */
+- (void)setFrameRate:(int)desiredFrameRate;
 
+/**
+ *  在设备支持的所有格式中是否 有要设置的帧率的格式，如果有将activeFormat设置为这个格式
+ *
+ *  @param desiredFrameRate desiredFrameRate
+ */
+- (void)configureFrameRate:(int)desiredFrameRate;
 
+/**
+ *  是否开启实时滤镜
+ *
+ *  @param openOrcloseFilter YES，开启，默认FilterShowModeNone。
+ */
+- (void)openOrCloseFilter:(BOOL)openOrcloseFilter;
+
+/**
+ *  设置滤镜模式
+ *
+ *  @param mode
+ */
+- (void)setUpCustomFilterMode:(FilterShowMode)mode;
 
 
 

@@ -21,6 +21,8 @@
 		640DC3021AC1640200E45999 /* DateHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 640DC3011AC1640200E45999 /* DateHandler.m */; };
 		640DC3051AC1665300E45999 /* CommonDefine.m in Sources */ = {isa = PBXBuildFile; fileRef = 640DC3041AC1665300E45999 /* CommonDefine.m */; };
 		640DC30B1AC16B9C00E45999 /* AlbumViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 640DC30A1AC16B9C00E45999 /* AlbumViewController.m */; };
+		644D8CF51AC91E0B00507D16 /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 644D8CF41AC91E0B00507D16 /* OpenGLES.framework */; };
+		644D8D351AC9343900507D16 /* CoreImage.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 644D8D341AC9343900507D16 /* CoreImage.framework */; };
 		64B9ABFF1AC519D900CE0D2C /* ExposureSetVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9ABFE1AC519D900CE0D2C /* ExposureSetVC.m */; };
 		64B9F65C1AC2929B00FBD86B /* AlbumCollectionViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9F65B1AC2929B00FBD86B /* AlbumCollectionViewCell.m */; };
 		64B9F6601AC2964900FBD86B /* ViewModelClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9F65F1AC2964900FBD86B /* ViewModelClass.m */; };
@@ -29,6 +31,7 @@
 		64B9F66C1AC29CA400FBD86B /* AlbumHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9F66B1AC29CA400FBD86B /* AlbumHandler.m */; };
 		64B9F66F1AC29FDE00FBD86B /* AlbumViewModeClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9F66E1AC29FDE00FBD86B /* AlbumViewModeClass.m */; };
 		64B9F6731AC2A34900FBD86B /* CameraViewModeClass.m in Sources */ = {isa = PBXBuildFile; fileRef = 64B9F6721AC2A34900FBD86B /* CameraViewModeClass.m */; };
+		64BCEB231AC6EAD10049ABA2 /* FrameRateSetVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 64BCEB221AC6EAD10049ABA2 /* FrameRateSetVC.m */; };
 		64BF68201AC0F908001535F5 /* CoreMedia.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64BF681F1AC0F908001535F5 /* CoreMedia.framework */; };
 		64BF68221AC0F90E001535F5 /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64BF68211AC0F90E001535F5 /* QuartzCore.framework */; };
 		64BF68241AC0F91B001535F5 /* CoreVideo.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64BF68231AC0F91B001535F5 /* CoreVideo.framework */; };
@@ -39,6 +42,7 @@
 		64BF682E1AC0F953001535F5 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64BF682D1AC0F953001535F5 /* UIKit.framework */; };
 		64BF68301AC0F95F001535F5 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 64BF682F1AC0F95F001535F5 /* Foundation.framework */; };
 		64BF68341AC0FA1D001535F5 /* AVFoundationHandler.m in Sources */ = {isa = PBXBuildFile; fileRef = 64BF68331AC0FA1D001535F5 /* AVFoundationHandler.m */; };
+		64C2099D1AC8EA7700B26444 /* CameraFilterVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 64C2099C1AC8EA7700B26444 /* CameraFilterVC.m */; };
 		64C2A0D41AC3ECF300967689 /* CameraView.m in Sources */ = {isa = PBXBuildFile; fileRef = 64C2A0D31AC3ECF300967689 /* CameraView.m */; };
 		64C2A0D71AC4064300967689 /* MyNavigationViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 64C2A0D61AC4064300967689 /* MyNavigationViewController.m */; };
 /* End PBXBuildFile section */
@@ -80,6 +84,8 @@
 		640DC3041AC1665300E45999 /* CommonDefine.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CommonDefine.m; sourceTree = "<group>"; };
 		640DC3091AC16B9C00E45999 /* AlbumViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlbumViewController.h; path = CameraDemo/AlbumViewController.h; sourceTree = "<group>"; };
 		640DC30A1AC16B9C00E45999 /* AlbumViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = AlbumViewController.m; path = CameraDemo/AlbumViewController.m; sourceTree = "<group>"; };
+		644D8CF41AC91E0B00507D16 /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
+		644D8D341AC9343900507D16 /* CoreImage.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreImage.framework; path = System/Library/Frameworks/CoreImage.framework; sourceTree = SDKROOT; };
 		64B9ABFD1AC519D900CE0D2C /* ExposureSetVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ExposureSetVC.h; sourceTree = "<group>"; };
 		64B9ABFE1AC519D900CE0D2C /* ExposureSetVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = ExposureSetVC.m; sourceTree = "<group>"; };
 		64B9F65A1AC2929B00FBD86B /* AlbumCollectionViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = AlbumCollectionViewCell.h; path = CameraDemo/AlbumCollectionViewCell.h; sourceTree = "<group>"; };
@@ -96,6 +102,8 @@
 		64B9F66E1AC29FDE00FBD86B /* AlbumViewModeClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AlbumViewModeClass.m; sourceTree = "<group>"; };
 		64B9F6711AC2A34900FBD86B /* CameraViewModeClass.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraViewModeClass.h; sourceTree = "<group>"; };
 		64B9F6721AC2A34900FBD86B /* CameraViewModeClass.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraViewModeClass.m; sourceTree = "<group>"; };
+		64BCEB211AC6EAD10049ABA2 /* FrameRateSetVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = FrameRateSetVC.h; sourceTree = "<group>"; };
+		64BCEB221AC6EAD10049ABA2 /* FrameRateSetVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = FrameRateSetVC.m; sourceTree = "<group>"; };
 		64BF681F1AC0F908001535F5 /* CoreMedia.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreMedia.framework; path = System/Library/Frameworks/CoreMedia.framework; sourceTree = SDKROOT; };
 		64BF68211AC0F90E001535F5 /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		64BF68231AC0F91B001535F5 /* CoreVideo.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreVideo.framework; path = System/Library/Frameworks/CoreVideo.framework; sourceTree = SDKROOT; };
@@ -107,6 +115,8 @@
 		64BF682F1AC0F95F001535F5 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
 		64BF68321AC0FA1D001535F5 /* AVFoundationHandler.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AVFoundationHandler.h; sourceTree = "<group>"; };
 		64BF68331AC0FA1D001535F5 /* AVFoundationHandler.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AVFoundationHandler.m; sourceTree = "<group>"; };
+		64C2099B1AC8EA7700B26444 /* CameraFilterVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraFilterVC.h; sourceTree = "<group>"; };
+		64C2099C1AC8EA7700B26444 /* CameraFilterVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraFilterVC.m; sourceTree = "<group>"; };
 		64C2A0D21AC3ECF300967689 /* CameraView.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CameraView.h; sourceTree = "<group>"; };
 		64C2A0D31AC3ECF300967689 /* CameraView.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = CameraView.m; sourceTree = "<group>"; };
 		64C2A0D51AC4064300967689 /* MyNavigationViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = MyNavigationViewController.h; sourceTree = "<group>"; };
@@ -119,6 +129,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				644D8D351AC9343900507D16 /* CoreImage.framework in Frameworks */,
+				644D8CF51AC91E0B00507D16 /* OpenGLES.framework in Frameworks */,
 				64BF68301AC0F95F001535F5 /* Foundation.framework in Frameworks */,
 				64BF682E1AC0F953001535F5 /* UIKit.framework in Frameworks */,
 				64BF682C1AC0F942001535F5 /* CoreData.framework in Frameworks */,
@@ -260,6 +272,10 @@
 				64B9F6721AC2A34900FBD86B /* CameraViewModeClass.m */,
 				64B9ABFD1AC519D900CE0D2C /* ExposureSetVC.h */,
 				64B9ABFE1AC519D900CE0D2C /* ExposureSetVC.m */,
+				64BCEB211AC6EAD10049ABA2 /* FrameRateSetVC.h */,
+				64BCEB221AC6EAD10049ABA2 /* FrameRateSetVC.m */,
+				64C2099B1AC8EA7700B26444 /* CameraFilterVC.h */,
+				64C2099C1AC8EA7700B26444 /* CameraFilterVC.m */,
 			);
 			name = CameraView;
 			sourceTree = "<group>";
@@ -280,6 +296,8 @@
 		EDCF479E44B31B07FEDC6505 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				644D8D341AC9343900507D16 /* CoreImage.framework */,
+				644D8CF41AC91E0B00507D16 /* OpenGLES.framework */,
 				64BF682F1AC0F95F001535F5 /* Foundation.framework */,
 				64BF682D1AC0F953001535F5 /* UIKit.framework */,
 				64BF682B1AC0F942001535F5 /* CoreData.framework */,
@@ -434,6 +452,7 @@
 				64BF68341AC0FA1D001535F5 /* AVFoundationHandler.m in Sources */,
 				640DC3051AC1665300E45999 /* CommonDefine.m in Sources */,
 				64B9F6661AC29B1600FBD86B /* AlbumInfo.m in Sources */,
+				64C2099D1AC8EA7700B26444 /* CameraFilterVC.m in Sources */,
 				64B9F6691AC29B1700FBD86B /* PhotoInfo.m in Sources */,
 				64B9ABFF1AC519D900CE0D2C /* ExposureSetVC.m in Sources */,
 				64B9F66F1AC29FDE00FBD86B /* AlbumViewModeClass.m in Sources */,
@@ -442,6 +461,7 @@
 				6404ECDA1AC01D050011BC5A /* CameraDemo.xcdatamodeld in Sources */,
 				64B9F6601AC2964900FBD86B /* ViewModelClass.m in Sources */,
 				6404ECD71AC01D050011BC5A /* AppDelegate.m in Sources */,
+				64BCEB231AC6EAD10049ABA2 /* FrameRateSetVC.m in Sources */,
 				6404ECDD1AC01D050011BC5A /* ViewController.m in Sources */,
 				6404ECD41AC01D050011BC5A /* main.m in Sources */,
 				64C2A0D71AC4064300967689 /* MyNavigationViewController.m in Sources */,

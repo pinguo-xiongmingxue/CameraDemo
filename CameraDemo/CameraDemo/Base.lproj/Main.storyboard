@@ -101,6 +101,36 @@
                                             <action selector="preImageBtnClick:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="OVp-pd-1tK"/>
                                         </connections>
                                     </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="URd-D4-MN5">
+                                        <rect key="frame" x="64" y="12" width="65" height="43"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="测光">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="lightAndFocusBtnClick:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="Vr2-vd-mS1"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="EaG-ck-jDg">
+                                        <rect key="frame" x="0.0" y="57" width="56" height="43"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="帧率">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="frameRateBtnClick:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="mxG-7K-7VU"/>
+                                        </connections>
+                                    </button>
+                                    <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" buttonType="roundedRect" lineBreakMode="middleTruncation" id="jgc-n4-24p">
+                                        <rect key="frame" x="64" y="63" width="65" height="37"/>
+                                        <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                        <state key="normal" title="滤镜">
+                                            <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                        </state>
+                                        <connections>
+                                            <action selector="fliterBtnClick:" destination="vXZ-lx-hvc" eventType="touchUpInside" id="SoB-vV-i07"/>
+                                        </connections>
+                                    </button>
                                 </subviews>
                                 <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
                             </view>
@@ -115,7 +145,10 @@
                         <outlet property="cameraOkBtn" destination="hHx-Li-4qj" id="emk-3y-teV"/>
                         <outlet property="cameraView" destination="5zJ-nd-Enj" id="MQn-7W-p80"/>
                         <outlet property="directionBtn" destination="WKn-4P-fbW" id="Egb-Ye-zya"/>
+                        <outlet property="filterBtn" destination="jgc-n4-24p" id="R3J-K3-vgS"/>
                         <outlet property="flashBtn" destination="KVh-3u-B8d" id="SLm-ay-Dzl"/>
+                        <outlet property="frameRateBtnClick" destination="EaG-ck-jDg" id="foY-DD-B3h"/>
+                        <outlet property="lightAndFocusBtn" destination="URd-D4-MN5" id="ALk-X2-52i"/>
                         <outlet property="pixelBtn" destination="OZZ-BZ-whi" id="ZBV-ka-HGA"/>
                         <outlet property="preImageBtn" destination="oVV-gK-g2V" id="v5P-nP-FD8"/>
                     </connections>
@@ -252,7 +285,103 @@
                 </viewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="j4x-7y-yYd" userLabel="First Responder" sceneMemberID="firstResponder"/>
             </objects>
-            <point key="canvasLocation" x="786" y="303"/>
+            <point key="canvasLocation" x="773" y="57"/>
+        </scene>
+        <!--Frame Rate SetVC-->
+        <scene sceneID="6Bv-t8-9pA">
+            <objects>
+                <viewController storyboardIdentifier="FrameRateSetVC" id="DGP-S0-4TC" customClass="FrameRateSetVC" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="cRM-fo-tdQ">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="100"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="Zrt-jw-5QN">
+                                <rect key="frame" x="261" y="7" width="53" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" image="close">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="closeBtnClick:" destination="rea-gu-NKB" eventType="touchUpInside" id="1Jm-X2-Qzh"/>
+                                    <action selector="closeBtnClick:" destination="DGP-S0-4TC" eventType="touchUpInside" id="TM8-ZO-U15"/>
+                                </connections>
+                            </button>
+                            <slider opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" value="0.5" minValue="0.0" maxValue="1" id="88j-8p-gQh">
+                                <rect key="frame" x="65" y="7" width="196" height="31"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <connections>
+                                    <action selector="frameRateChange:" destination="DGP-S0-4TC" eventType="valueChanged" id="Od6-aT-7nO"/>
+                                </connections>
+                            </slider>
+                            <label opaque="NO" userInteractionEnabled="NO" contentMode="left" horizontalHuggingPriority="251" verticalHuggingPriority="251" text="帧率" textAlignment="center" lineBreakMode="tailTruncation" baselineAdjustment="alignBaselines" adjustsFontSizeToFit="NO" id="djA-6c-j70">
+                                <rect key="frame" x="6" y="7" width="53" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <fontDescription key="fontDescription" type="system" pointSize="15"/>
+                                <color key="textColor" cocoaTouchSystemColor="darkTextColor"/>
+                                <nil key="highlightedColor"/>
+                            </label>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <nil key="simulatedStatusBarMetrics"/>
+                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+                    <size key="freeformSize" width="320" height="100"/>
+                    <connections>
+                        <outlet property="closeBtn" destination="Zrt-jw-5QN" id="f4p-jQ-XrO"/>
+                        <outlet property="frameRateSlider" destination="88j-8p-gQh" id="8k2-Ph-IRH"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="lkN-Nj-hBy" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="773" y="235"/>
+        </scene>
+        <!--Camera FilterVC-->
+        <scene sceneID="88v-6o-pb0">
+            <objects>
+                <viewController storyboardIdentifier="CameraFilterVC" id="SoD-iL-m1J" customClass="CameraFilterVC" sceneMemberID="viewController">
+                    <view key="view" contentMode="scaleToFill" id="bZ6-ee-4po">
+                        <rect key="frame" x="0.0" y="0.0" width="320" height="100"/>
+                        <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
+                        <subviews>
+                            <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="0td-cN-McT">
+                                <rect key="frame" x="267" y="6" width="53" height="30"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <state key="normal" image="close">
+                                    <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                </state>
+                                <connections>
+                                    <action selector="closeBtnClick:" destination="rea-gu-NKB" eventType="touchUpInside" id="SAn-9Z-bkB"/>
+                                    <action selector="closeBtnClick:" destination="DGP-S0-4TC" eventType="touchUpInside" id="SHF-Hr-eOD"/>
+                                    <action selector="closeBtnClick:" destination="SoD-iL-m1J" eventType="touchUpInside" id="oA6-Fd-hQI"/>
+                                </connections>
+                            </button>
+                            <segmentedControl opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="left" contentVerticalAlignment="top" segmentControlStyle="plain" selectedSegmentIndex="0" id="TUF-ea-quK">
+                                <rect key="frame" x="16" y="36" width="268" height="29"/>
+                                <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                <segments>
+                                    <segment title="None"/>
+                                    <segment title="Custom1"/>
+                                    <segment title="Custom2"/>
+                                    <segment title="Custom3"/>
+                                </segments>
+                                <connections>
+                                    <action selector="filterSegmentBtnClick:" destination="SoD-iL-m1J" eventType="valueChanged" id="kQM-ky-QFf"/>
+                                </connections>
+                            </segmentedControl>
+                        </subviews>
+                        <color key="backgroundColor" white="1" alpha="1" colorSpace="calibratedWhite"/>
+                    </view>
+                    <nil key="simulatedStatusBarMetrics"/>
+                    <freeformSimulatedSizeMetrics key="simulatedDestinationMetrics"/>
+                    <size key="freeformSize" width="320" height="100"/>
+                    <connections>
+                        <outlet property="closeBtn" destination="0td-cN-McT" id="mAq-vO-GlX"/>
+                        <outlet property="filterSegmentBtn" destination="TUF-ea-quK" id="fOb-IF-7rN"/>
+                    </connections>
+                </viewController>
+                <placeholder placeholderIdentifier="IBFirstResponder" id="SLr-lN-yIe" userLabel="First Responder" sceneMemberID="firstResponder"/>
+            </objects>
+            <point key="canvasLocation" x="773" y="413"/>
         </scene>
     </scenes>
     <resources>

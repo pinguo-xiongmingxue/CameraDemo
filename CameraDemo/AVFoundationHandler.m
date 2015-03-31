@@ -7,7 +7,6 @@
 //
 
 #import "AVFoundationHandler.h"
-#import <GLKit/GLKit.h>
 
 
 static NSString * const ExposurationModeKey    = @"avDeviceInput.device.exposureMode";
@@ -25,6 +24,10 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 @interface AVFoundationHandler ()<AVCaptureVideoDataOutputSampleBufferDelegate>
 {
     BOOL _openOrcloseFilter;
+    BOOL _openDoubleExposure; //
+    BOOL _isFirst;
+    BOOL _isSecond;
+
 }
 
 @property (nonatomic, strong) AVCaptureSession * avCaptureSession;
@@ -46,11 +49,14 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 @property (nonatomic, readwrite) Float64 activeMaxFrameRate;
 @property (nonatomic, readwrite) Float64 activeMinFrameRate;
 @property (nonatomic, readwrite) FilterShowMode currentFilterMode;
+@property (nonatomic, readwrite) BOOL curentDoubleExposureState;
 
 
 @property (nonatomic, strong) CIFilter * customFilter;
 @property (nonatomic, strong) CIContext * ciContext;
 @property (nonatomic, strong) CIImage * outPutImage;
+
+@property (nonatomic, strong) UIImage * frontImage;
 
 @end
 
@@ -73,6 +79,9 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     if (self) {
         _sessionQueue = dispatch_queue_create("sessionQueue", DISPATCH_QUEUE_SERIAL);
         _openOrcloseFilter = NO;
+        _openDoubleExposure = NO;
+        _isFirst = YES;
+        _isSecond = NO;
     }
     return self;
 }
@@ -160,6 +169,11 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
 - (void)setCameraOKImageBlock:( void(^)(NSData * imageData)) imageBlock
 {
     _imageBlock = imageBlock;
+}
+
+- (void)setCameraOKVideoBlock:(void(^)(BOOL *isOk)) videoBlock
+{
+    _videoBlock = videoBlock;
 }
 
 - (FlashMode)currentFlashMode
@@ -250,6 +264,11 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     return _currentPixel;
 }
 
+- (BOOL)curentDoubleExposureState
+{
+    return _openDoubleExposure;
+}
+
 #pragma mark - SetUp AVFoundation
 
 - (void)openOrCloseFilter:(BOOL)openOrcloseFilter
@@ -263,6 +282,20 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
       //  self.currentFilterMode = FilterShowModeNone;
         _openOrcloseFilter = NO;
         self.customFilter = nil;
+        self.ciContext = nil;
+    }
+}
+
+- (void)openDoubleExposure:(BOOL)isOpenDoubleExposure
+{
+    if (isOpenDoubleExposure) {
+        _openOrcloseFilter = NO;
+        _openDoubleExposure = YES;
+        [self setUpCIContext];
+        _isFirst = YES;
+        _isSecond = NO;
+    }else{
+        _openDoubleExposure = NO;
         self.ciContext = nil;
     }
 }
@@ -395,6 +428,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     [self.videoDataOutput setSampleBufferDelegate:self queue:queue];
     
     
+    
     [self setUpStillImageOutPut];
     if ([self.avCaptureSession canAddOutput:self.stillImageOutput]) {
         [self.avCaptureSession addOutput:self.stillImageOutput];
@@ -413,7 +447,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     [self setUpCaptureSession];
     [self focusWithMode:FocusModeContinuousAutoFocus exposeWithMode:ExposureModeContinuousAutoExposure whiteBalanceMode:WhiteBalanceModeContinuousAutoWhiteBalance monitorSubjectAreaChange:NO];
 
-    [self openOrCloseFilter:YES];
+    [self openOrCloseFilter:NO];
     
     self.previewLayer = [AVCaptureVideoPreviewLayer layerWithSession:self.avCaptureSession];
     self.previewLayer.frame = preView.bounds;
@@ -423,6 +457,7 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
     
   
     self.filterLayer = [CALayer layer];
+//    [self.filterLayer setBackgroundColor:[UIColor redColor].CGColor];
     self.filterLayer.frame = self.previewLayer.bounds;
     [preView.layer insertSublayer:self.filterLayer above:self.previewLayer];
     
@@ -500,6 +535,8 @@ static float EXPOSURE_MINIMUM_DURATION = 1.0/1000;
         if (error) {
             NSLog(@"camera error: %@",error);
         }
+    
+        
         
         NSData * imageData = [AVCaptureStillImageOutput jpegStillImageNSDataRepresentation:imageDataSampleBuffer];
         //[self.delegate postImageData:imageData];
@@ -861,6 +898,75 @@ DesiredFormatFound:
 
 #pragma mark - AVCaptureVideoDataOutputSampleBufferDeegate
 
+- (void)cameraVideoOk
+{
+    //_isCameraVideoOk = YES;
+    
+    if (_isFirst) {
+        [self.avCaptureSession stopRunning];
+        
+        CGImageRef cgImageRef = [self.ciContext createCGImage:self.outPutImage fromRect:[self.outPutImage extent]];
+        
+//        UIImage * image = [UIImage imageWithCGImage:cgImageRef];
+//        NSData * imageData = UIImagePNGRepresentation(image);
+//        
+//        self.imageBlock(imageData);
+        
+        UIImage * image = [UIImage imageWithCGImage:cgImageRef];
+        
+        if (image) {
+            UIImage * frontImage = [self imageByApplyingAlpha:0.5 image:image];
+            self.frontImage = image;
+            self.filterLayer.contents = (__bridge id)([frontImage CGImage]);
+            CGImageRelease(cgImageRef);
+            
+        }
+      
+        
+         _isFirst = NO;
+         _isSecond = YES;
+        [self.avCaptureSession startRunning];
+        
+       
+    }else if(_isSecond){
+        
+        [self.avCaptureSession stopRunning];
+        
+        CGImageRef cgImageRef = [self.ciContext createCGImage:self.outPutImage fromRect:[self.outPutImage extent]];
+        
+        //        UIImage * image = [UIImage imageWithCGImage:cgImageRef];
+        //        NSData * imageData = UIImagePNGRepresentation(image);
+        //
+        //        self.imageBlock(imageData);
+        
+        UIImage * image = [UIImage imageWithCGImage:cgImageRef];
+        
+        CGImageRelease(cgImageRef);
+        
+        
+        
+        if (image) {
+            
+            UIImage * resultImage = [self processUsingPixels:image];
+            NSData * imageData = UIImagePNGRepresentation(resultImage);
+            self.imageBlock(imageData);
+          
+          
+        }
+        
+        
+        
+        _isFirst = YES;
+        _isSecond = NO;
+        [self.avCaptureSession startRunning];
+        self.filterLayer.contents = nil;
+    }
+    
+  
+    
+    
+}
+
 - (void)captureOutput:(AVCaptureOutput *)captureOutput didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer fromConnection:(AVCaptureConnection *)connection
 {
     if (_openOrcloseFilter) {
@@ -890,18 +996,219 @@ DesiredFormatFound:
     
         CGImageRef cgImageRef = [self.ciContext createCGImage:self.outPutImage fromRect:[self.outPutImage extent]];
 
+        
         dispatch_sync(dispatch_get_main_queue(), ^{
     
             self.filterLayer.contents = (__bridge id)(cgImageRef);
 
             CGImageRelease(cgImageRef);
         });
+    }else if(_openDoubleExposure){
+        if (_isFirst || _isSecond) {
+
+            
+           
+            CVImageBufferRef pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer);
+            
+            CGAffineTransform transform;
+            UIDeviceOrientation  orientation = [[UIDevice currentDevice] orientation];
+            if (orientation == UIDeviceOrientationPortrait) {
+                transform = CGAffineTransformMakeRotation(-M_PI/2.0);
+            }else if (orientation == UIDeviceOrientationPortraitUpsideDown){
+                transform = CGAffineTransformMakeRotation(M_PI/2.0);
+            }else if (orientation == UIDeviceOrientationLandscapeRight){
+                transform = CGAffineTransformMakeRotation(M_PI);
+            }else{
+                transform = CGAffineTransformMakeRotation(0);
+            }
+            
+            self.outPutImage = [[CIImage imageWithCVPixelBuffer:pixelBuffer] imageByApplyingTransform:transform];
+            
+        
+            
+        
+//            CGImageRef cgImageRef = [self.ciContext createCGImage:self.outPutImage fromRect:[self.outPutImage extent]];
+//            
+//            UIImage * image = [UIImage imageWithCGImage:cgImageRef];
+//            
+//            UIImage * frontImage = [self imageByApplyingAlpha:0.5 image:image];
+//            
+//            
+//            dispatch_sync(dispatch_get_main_queue(), ^{
+//                
+//                self.filterLayer.contents = (__bridge id)([frontImage CGImage]);
+//                
+//                CGImageRelease(cgImageRef);
+//            });
+            
+            
+            
+            
+        }else{
+        
+    
+            
+//            _isFirst = NO;
+        }
+        
+        
     }else{
         
     }
 
     
 }
+
+//设置图片透明度
+- (UIImage *)imageByApplyingAlpha:(CGFloat)alpha  image:(UIImage*)image
+{
+    UIGraphicsBeginImageContextWithOptions(image.size, NO, 0.0f);
+    
+    CGContextRef ctx = UIGraphicsGetCurrentContext();
+    
+    NSLog(@"rect %@",NSStringFromCGSize(image.size));
+    
+    CGRect area = CGRectMake(0, 0, image.size.width, image.size.height);
+    
+    CGContextScaleCTM(ctx, 1, -1);
+    CGContextTranslateCTM(ctx, 0, -area.size.height);
+    
+    CGContextSetBlendMode(ctx, kCGBlendModeMultiply);
+    
+    CGContextSetAlpha(ctx, alpha);
+    
+    CGContextDrawImage(ctx, area, image.CGImage);
+    
+    UIImage *newImage = UIGraphicsGetImageFromCurrentImageContext();
+    
+    UIGraphicsEndImageContext();
+    
+    return newImage;
+}
+
+#define Mask8(x) ( (x) & 0xFF )
+#define R(x) ( Mask8(x) )
+#define G(x) ( Mask8(x >> 8 ) )
+#define B(x) ( Mask8(x >> 16) )
+#define A(x) ( Mask8(x >> 24) )
+#define RGBAMake(r, g, b, a) ( Mask8(r) | Mask8(g) << 8 | Mask8(b) << 16 | Mask8(a) << 24 )
+
+- (UIImage *)processUsingPixels:(UIImage *)inputImage
+{
+    if (!self.frontImage) {
+        return nil;
+    }
+    
+    
+//    UIGraphicsBeginImageContext(inputImage.size);
+//    
+//    // Draw image1
+//    [self.frontImage drawInRect:CGRectMake(0, 0, self.frontImage.size.width, self.frontImage.size.height)];
+//    
+//    // Draw image2
+//    [inputImage drawInRect:CGRectMake(0, 0, inputImage.size.width, inputImage.size.height)];
+//    
+//    UIImage *processedImage = UIGraphicsGetImageFromCurrentImageContext();
+//    UIGraphicsEndImageContext();
+    
+    
+    UInt32 * backPixels;
+    
+    CGImageRef backCGImage = [inputImage CGImage];
+    NSUInteger backWidth = CGImageGetWidth(backCGImage);
+    NSUInteger backHeight = CGImageGetHeight(backCGImage);
+    
+    CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+    
+    NSUInteger bytesPerPixel = 4;
+    NSUInteger bitsPerComponent = 8;
+    
+    NSUInteger inputBytesPerRow = bytesPerPixel * backWidth;
+    
+    backPixels = (UInt32 *)calloc(backHeight * backWidth, sizeof(UInt32));
+    
+    CGContextRef context = CGBitmapContextCreate(backPixels, backWidth, backHeight,
+                                                 bitsPerComponent, inputBytesPerRow, colorSpace,
+                                                 kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    CGContextDrawImage(context, CGRectMake(0, 0, backWidth, backHeight), backCGImage);
+    
+    
+    
+    if (self.frontImage) {
+        NSLog(@"xxxx");
+    }
+    
+    CGImageRef frontCGImage = [self.frontImage CGImage];
+    
+    NSUInteger frontW = CGImageGetWidth(frontCGImage);
+    NSUInteger frontH = CGImageGetHeight(frontCGImage);
+    CGColorSpaceRef colorSpace1 = CGColorSpaceCreateDeviceRGB();
+    NSUInteger bytesPerPixel1 = 4;
+    NSUInteger bitsPerComponent1 = 8;
+    
+    NSUInteger inputBytesPerRow1 = bytesPerPixel1 * frontW;
+    
+    UInt32 * frontPixels = (UInt32 *)calloc(frontW * frontH, sizeof(UInt32));
+    
+    CGContextRef frontContext = CGBitmapContextCreate(frontPixels, frontW, frontH,
+                                                      bitsPerComponent1, inputBytesPerRow1, colorSpace1,
+                                                      kCGImageAlphaPremultipliedLast | kCGBitmapByteOrder32Big);
+    
+    CGContextDrawImage(frontContext, CGRectMake(0, 0, frontW, frontH),frontCGImage);
+  /*
+    假设一幅图象是A，另一幅透明的图象是B，那么透过B去看A，看上去的图象C就是B和A的混合图象，
+    设B图象的透明度为alpha(取值为0-1，1为完全透明，0为完全不透明).
+    Alpha混合公式如下：
+    R(C)=(1-alpha)*R(B) + alpha*R(A)
+    G(C)=(1-alpha)*G(B) + alpha*G(A)
+    B(C)=(1-alpha)*B(B) + alpha*B(A)
+    R(x)、G(x)、B(x)分别指颜色x的RGB分量原色值。
+    */
+    
+    for (NSUInteger j = 0; j < frontH; j++) {
+        for (NSUInteger i = 0; i < frontW; i++) {
+            UInt32 * backPixel = backPixels + j * backWidth + i;
+            UInt32 backColor = *backPixel;
+            
+            UInt32 * frontPixel = frontPixels + j * (int)frontW + i;
+            UInt32 frontColor = *frontPixel;
+            
+        
+            CGFloat ghostAlpha = 0.5f * (A(frontColor) / 255.0);
+            UInt32 newR = R(frontColor) * (1 - ghostAlpha) + R(backColor) * ghostAlpha;
+            UInt32 newG = G(frontColor) * (1 - ghostAlpha) + G(backColor) * ghostAlpha;
+            UInt32 newB = B(frontColor) * (1 - ghostAlpha) + B(backColor) * ghostAlpha;
+            
+            newR = MAX(0,MIN(255, newR));
+            newG = MAX(0,MIN(255, newG));
+            newB = MAX(0,MIN(255, newB));
+            
+            *backPixel = RGBAMake(newR, newG, newB, A(backColor));
+        }
+        
+    }
+    
+    
+    CGImageRef newCGImage = CGBitmapContextCreateImage(context);
+    UIImage * processedImage = [UIImage imageWithCGImage:newCGImage];
+    
+    // 5. Cleanup!
+    CGColorSpaceRelease(colorSpace);
+    CGContextRelease(context);
+    CGContextRelease(frontContext);
+    free(backPixels);
+    free(frontPixels);
+    
+    return processedImage;
+
+}
+
+#undef RGBAMake
+#undef R
+#undef G
+#undef B
+#undef A
+#undef Mask8
 
 #pragma mark - Utilities
 

@@ -47,6 +47,10 @@
 
 @property (weak, nonatomic) IBOutlet UIButton *filterBtn;
 
+@property (weak, nonatomic) IBOutlet UISwitch *doubleExposureBtn;
+
+
+
 @property (strong, nonatomic) ExposureSetVC * exposureSetView;
 @property (strong, nonatomic) FrameRateSetVC * frameRateSetView;
 @property (strong, nonatomic) CameraFilterVC * cameraFilterSetView;
@@ -119,6 +123,9 @@
     [self focusBtnChangeUI:[[AVFoundationHandler shareInstance] currentFocusMode]];
     [self whiteBanlanceBtnChangeUI:[[AVFoundationHandler shareInstance] currentWBMode]];
     [self lightAndFocusBtnChangeUI];
+    [self.doubleExposureBtn setOn: [[AVFoundationHandler shareInstance] curentDoubleExposureState] animated:NO];
+    
+    
    // [self.cameraView bringSubviewToFront:self.cameraOkBtn];
     PhotoInfo * photoInfo = [PhotoHandler getPhotoInfoWithAlbum:AlbumTitle];
      UIImage * image = [[ImageCacheHandler shareInstance] diskImageForKey:photoInfo.name withPath:photoInfo.address];
@@ -246,8 +253,9 @@
 
 - (IBAction)cameraOkBtnClick:(id)sender
 {
-    //[_AVHandler cameraOK];
-    [[AVFoundationHandler shareInstance] cameraOK];
+
+  //  [[AVFoundationHandler shareInstance] cameraOK];
+    [[AVFoundationHandler shareInstance] cameraVideoOk];
 }
 
 - (IBAction)preImageBtnClick:(id)sender
@@ -401,6 +409,11 @@
 }
 
 
+- (IBAction)doubleBtnClick:(id)sender
+{
+    UISwitch * slider = sender;
+    [[AVFoundationHandler shareInstance] openDoubleExposure:slider.on];
+}
 
 
 #pragma mark - show Animation

@@ -14,6 +14,7 @@
 #import <UIKit/UIKit.h>
 #import <CoreVideo/CVPixelBuffer.h>
 #import <AVFoundation/AVMediaFormat.h>
+#import <QuartzCore/QuartzCore.h>
 
 //闪光
 typedef enum {
@@ -62,6 +63,7 @@ typedef enum {
 
 
 typedef void (^CameraImageBlock)(NSData * imageData);
+typedef void (^CameraVideoBlock)(BOOL *isOk);
 
 @interface AVFoundationHandler : NSObject
 {
@@ -69,6 +71,7 @@ typedef void (^CameraImageBlock)(NSData * imageData);
 }
 
 @property (nonatomic, strong) CameraImageBlock imageBlock;
+@property (nonatomic, strong) CameraVideoBlock videoBlock;
 
 @property (nonatomic, readonly) float minISO;
 @property (nonatomic, readonly) float maxISO;
@@ -83,12 +86,16 @@ typedef void (^CameraImageBlock)(NSData * imageData);
 @property (nonatomic, readonly) Float64 activeMaxFrameRate;
 @property (nonatomic, readonly) Float64 activeMinFrameRate;
 @property (nonatomic, readonly) FilterShowMode currentFilterMode;
+@property (nonatomic, readonly) BOOL curentDoubleExposureState;
+
 
 + (instancetype)shareInstance;
 
 
+
 - (void)setCameraOKImageBlock:( void(^)(NSData * imageData)) imageBlock;
 
+- (void)setCameraOKVideoBlock:(void(^)(BOOL *isOk)) videoBlock;
 
 /**
  *  传入一个显示相机的view
@@ -118,6 +125,11 @@ typedef void (^CameraImageBlock)(NSData * imageData);
  *  拍照，还需要添加模式，待定。
  */
 - (void)cameraOK;
+
+/**
+ *  加滤镜的拍照
+ */
+- (void)cameraVideoOk;
 
 
 /**
@@ -227,7 +239,12 @@ typedef void (^CameraImageBlock)(NSData * imageData);
 - (void)setUpCustomFilterMode:(FilterShowMode)mode;
 
 
-
+/**
+ *  打开双重曝光
+ *
+ *  @param isOpenDoubleExposure <#isOpenDoubleExposure description#>
+ */
+- (void)openDoubleExposure:(BOOL)isOpenDoubleExposure;
 
 
 

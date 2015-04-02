@@ -20,15 +20,22 @@
 - (void)viewDidLoad {
     [super viewDidLoad];
     
+    
     self.frameRateSlider.maximumValue = [[AVFoundationHandler shareInstance] activeMaxFrameRate];
     self.frameRateSlider.minimumValue = [[AVFoundationHandler shareInstance] activeMinFrameRate];
     
-   
+    NSLog(@"%@  %@",@(self.frameRateSlider.maximumValue),@(self.frameRateSlider.minimumValue));
+    
+    
 }
 
+#pragma mark - btn action
 - (IBAction)closeBtnClick:(id)sender
 {
-    [_delegate frameRateSetVCClosed:self];
+    if ([_delegate respondsToSelector:@selector(frameRateSetVCClosed:)]) {
+         [_delegate frameRateSetVCClosed:self];
+    }
+   
 }
 
 

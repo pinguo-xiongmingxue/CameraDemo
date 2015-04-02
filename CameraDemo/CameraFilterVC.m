@@ -31,9 +31,9 @@
    
     self.filterSegmentBtn.selectedSegmentIndex = [[AVFoundationHandler shareInstance] currentFilterMode];
     
-    
 }
 
+#pragma mark - btn action
 - (IBAction)filterSegmentBtnClick:(id)sender
 {
     UISegmentedControl * seg = sender;
@@ -42,9 +42,9 @@
 
 - (IBAction)closeBtnClick:(id)sender
 {
-//    [[AVFoundationHandler shareInstance] setUpCustomFilterMode:FilterShowModeNone];
-//    self.filterSegmentBtn.selectedSegmentIndex = FilterShowModeNone;
-    [_delegate cameraFilterVCClosed:self];
+    if ([_delegate respondsToSelector:@selector(cameraFilterVCClosed:)]) {
+        [_delegate cameraFilterVCClosed:self];
+    }
 }
 
 

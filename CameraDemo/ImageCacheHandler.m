@@ -88,7 +88,7 @@
             NSData * data = imageData;
             if (!data) {
                 if (image) {
-                   // data = UIImageJPEGRepresentation(image, (CGFloat)0.8);
+                   // data = UIImageJPEGRepresentation(image, (CGFloat)0.5);
                     data = UIImagePNGRepresentation(image);
                 }
             }

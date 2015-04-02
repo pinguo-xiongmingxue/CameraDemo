@@ -20,12 +20,5 @@
 
 @property (nonatomic, assign) id<ExposureSetVCDelegate> delegate;
 
-@property (weak, nonatomic) IBOutlet UIButton *closeBtn;
-
-@property (weak, nonatomic) IBOutlet UISegmentedControl *exposureModeBtn;
-
-@property (weak, nonatomic) IBOutlet UISlider *exposureDurationBtn;
-
-@property (weak, nonatomic) IBOutlet UISlider *iSOBtn;
 
 @end

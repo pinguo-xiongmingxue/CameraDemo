@@ -13,7 +13,18 @@ static void * ExposureDurationContext = &ExposureDurationContext;
 
 @interface ExposureSetVC ()
 
+@property (weak, nonatomic) IBOutlet UIButton *closeBtn;
 
+@property (weak, nonatomic) IBOutlet UISegmentedControl *exposureModeBtn;
+
+@property (weak, nonatomic) IBOutlet UISlider *biasBtn;
+
+@property (weak, nonatomic) IBOutlet UISlider *offsetBtn;
+
+@property (weak, nonatomic) IBOutlet UISlider *iSOBtn;
+
+
+@property (weak, nonatomic) IBOutlet UISlider *durationBtn;
 
 @end
 
@@ -22,13 +33,26 @@ static void * ExposureDurationContext = &ExposureDurationContext;
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(changeExposureValue:) name:@"ExposureDuration" object:nil];
+    
+    //注册曝光模式，ISO，曝光时间，曝光档数，曝光档数目标偏移的通知
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(exposureModeChanged:) name:kExposureModeNotificationKey object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(iOSChanged:) name:kISOChangeNotificationKey object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(durationChanged:) name:kExposureDurationNotificationKey object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(offsetChanged:) name:kExposureTargetOffsetNotificationKey object:nil];
+    [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(biasChanged:) name:kExposureTargetBiasNotificationKey object:nil];
+    
 }
 
 - (void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
-    [[NSNotificationCenter defaultCenter] removeObserver:self];
+   
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kExposureModeNotificationKey object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kExposureDurationNotificationKey object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kExposureTargetOffsetNotificationKey object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kISOChangeNotificationKey object:nil];
+    [[NSNotificationCenter defaultCenter] removeObserver:self name:kExposureTargetBiasNotificationKey object:nil];
+    
 }
 
 - (void)awakeFromNib
@@ -42,90 +66,128 @@ static void * ExposureDurationContext = &ExposureDurationContext;
 {
     [super viewDidLoad];
     
-    self.exposureDurationBtn.enabled = NO;
-    self.iSOBtn.enabled = NO;
-    //    self.iSOBtn.maximumValue = [[AVFoundationHandler shareInstance] maxISO];
-    //    self.iSOBtn.minimumValue = [[AVFoundationHandler shareInstance] minISO];
-    //    self.iSOBtn.value = [[AVFoundationHandler shareInstance] currentISOValue];
+    NSInteger mode;
+    mode = [[AVFoundationHandler shareInstance] currentExposureMode];
+    self.exposureModeBtn.selectedSegmentIndex = mode;
     
-    
+    [self.durationBtn setMaximumValue:1.0];
+    [self.durationBtn setMinimumValue:0.0];
     
     [self.iSOBtn setMaximumValue:[[AVFoundationHandler shareInstance] maxISO]];
     [self.iSOBtn setMinimumValue:[[AVFoundationHandler shareInstance] minISO]];
     [self.iSOBtn setValue:[[AVFoundationHandler shareInstance] currentISOValue]];
     
-    NSLog(@"maxISO %f  minISO  %f  current %f  btn max %f  btn min %f btn current %f",[[AVFoundationHandler shareInstance] maxISO],[[AVFoundationHandler shareInstance] minISO],[[AVFoundationHandler shareInstance] currentISOValue],self.iSOBtn.maximumValue,self.iSOBtn.minimumValue,self.iSOBtn.value);
+    [self.biasBtn setMaximumValue:[[AVFoundationHandler shareInstance] maxExposureBias]];
+    [self.biasBtn setMinimumValue:[[AVFoundationHandler shareInstance] minExposureBias]];
+    [self.biasBtn setValue:[[AVFoundationHandler shareInstance] currentExposureBias]];
     
-    
-    
-    self.exposureDurationBtn.value = [[AVFoundationHandler shareInstance] currentExposureDuration];
-    self.exposureModeBtn.selectedSegmentIndex = [[AVFoundationHandler shareInstance] currentExposureMode];
-    [self checkExposureDuration:self.exposureModeBtn.selectedSegmentIndex];
+    [self.offsetBtn setMaximumValue:[[AVFoundationHandler shareInstance] maxExposureBias]];
+    [self.offsetBtn setMinimumValue:[[AVFoundationHandler shareInstance] minExposureBias]];
 
+    self.offsetBtn.enabled = NO;
+    self.biasBtn.enabled = YES;
     
-}
-
-- (void)checkExposureDuration:(NSInteger)value
-{
-    if (value == 3) {
-        self.exposureDurationBtn.enabled = YES;
+    if (mode == 2) {
+        self.durationBtn.enabled = YES;
         self.iSOBtn.enabled = YES;
     }else{
-        self.exposureDurationBtn.enabled = NO;
+        self.durationBtn.enabled = NO;
         self.iSOBtn.enabled = NO;
     }
+    
 }
+
+#pragma mark - Notification
+- (void)exposureModeChanged:(NSNotification *)notification
+{
+    NSDictionary * dict = [notification userInfo];
+    NSInteger mode = [dict[@"value"] integerValue];
+    
+    self.exposureModeBtn.selectedSegmentIndex = mode;
+    if (mode == 2) {
+        self.durationBtn.enabled = YES;
+        self.iSOBtn.enabled = YES;
+    }else{
+        self.durationBtn.enabled = NO;
+        self.iSOBtn.enabled = NO;
+    }
+    
+}
+
+- (void)iOSChanged:(NSNotification *)notification
+{
+    NSDictionary * dict = [notification userInfo];
+    float value = [dict[@"value"] floatValue];
+    [self.iSOBtn setValue:value animated:YES];
+}
+
+- (void)durationChanged:(NSNotification *)notification
+{
+    NSDictionary * dict = [notification userInfo];
+    double duration = [dict[@"value"] doubleValue];
+    [self.durationBtn setValue:duration animated:YES];
+}
+
+- (void)offsetChanged:(NSNotification *)notification
+{
+    NSDictionary * dict = [notification userInfo];
+    float offset = [dict[@"value"] floatValue];
+    [self.offsetBtn setValue:offset animated:YES];
+}
+
+- (void)biasChanged:(NSNotification *)notification
+{
+    NSDictionary * dict = [notification userInfo];
+    float bias = [dict[@"value"] floatValue];
+    [self.biasBtn setValue:bias animated:YES];
+}
+
+
+#pragma mark - btn action
 
 - (IBAction)closeBtnClick:(id)sender
 {
-    [_delegate exposureSetVCClosed:self];
+    if ([_delegate respondsToSelector:@selector(exposureSetVCClosed:)]) {
+        [_delegate exposureSetVCClosed:self];
+
+    }
 }
 
-
-- (IBAction)exposureModeChange:(id)sender
+- (IBAction)exposureModeBtnClick:(id)sender
 {
-    UISegmentedControl * control = sender;
-   
-    [[AVFoundationHandler shareInstance] setExposure:(ExposureMode)control.selectedSegmentIndex];
-    [self checkExposureDuration:control.selectedSegmentIndex];
+    UISegmentedControl * seg = sender;
+    [[AVFoundationHandler shareInstance] setExposure:(ExposureMode)seg.selectedSegmentIndex];
+}
+
+- (IBAction)biasBtnClick:(id)sender
+{
+    UISlider * slider = sender;
+    [[AVFoundationHandler shareInstance] setExposureTargetBias:slider.value];
+}
+
+- (IBAction)offsetBtnClick:(id)sender
+{
+    
 }
 
 
-- (IBAction)exposureDurationChange:(id)sender
+- (IBAction)iSOBtnClick:(id)sender
+{
+    UISlider * slider = sender;
+    [[AVFoundationHandler shareInstance] setISO:slider.value];
+}
+
+- (IBAction)durationBtnClick:(id)sender
 {
     UISlider * slider = sender;
     [[AVFoundationHandler shareInstance] setExposureDuration:slider.value];
 }
-
-- (IBAction)iOSValueChange:(id)sender
-{
-    UISlider * slider = sender;
-    NSLog(@"sldierValue %f",slider.value);
-    [[AVFoundationHandler shareInstance] setISO:slider.value];
-}
-
-
-- (void)changeExposureValue:(NSNotification * )info
-{
-     self.exposureDurationBtn.value = [[AVFoundationHandler shareInstance] currentExposureDuration];
-}
-
-
-
 
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.
 }
 
-/*
-#pragma mark - Navigation
 
-// In a storyboard-based application, you will often want to do a little preparation before navigation
-- (void)prepareForSegue:(UIStoryboardSegue *)segue sender:(id)sender {
-    // Get the new view controller using [segue destinationViewController].
-    // Pass the selected object to the new view controller.
-}
-*/
 
 @end

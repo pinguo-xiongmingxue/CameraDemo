@@ -14,6 +14,11 @@
 
 + (id)shareInstance;
 
+/**
+ *  取得当前的时间字符串，用于生成照片名
+ *
+ *  @return 当前的时间字符串
+ */
 - (NSString *)photoDateString;
 
 @end

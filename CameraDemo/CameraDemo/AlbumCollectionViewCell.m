@@ -8,6 +8,8 @@
 
 #import "AlbumCollectionViewCell.h"
 #import "ImageCacheHandler.h"
+#import "PhotoInfo.h"
+#import "PhotoHandler.h"
 
 @implementation AlbumCollectionViewCell
 
@@ -16,5 +18,13 @@
     UIImage * image = [[ImageCacheHandler shareInstance] diskImageForKey:photoInfo.name withPath:photoInfo.address];
     self.photoImageView.image = image;
 }
+
+- (IBAction)deleteBtnClick:(id)sender
+{
+    if ([_delegate respondsToSelector:@selector(albumCollectionCellDelete:withIndexPath:)]) {
+        [_delegate albumCollectionCellDelete:self withIndexPath:self.indexPath];
+    }
+}
+
 
 @end

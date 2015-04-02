@@ -16,6 +16,19 @@
 #import <AVFoundation/AVMediaFormat.h>
 #import <QuartzCore/QuartzCore.h>
 
+
+//外部通知key
+extern NSString * const kExposureModeNotificationKey;
+extern NSString * const kExposureDurationNotificationKey;
+extern NSString * const kExposureTargetOffsetNotificationKey;
+extern NSString * const kExposureTargetBiasNotificationKey;
+extern NSString * const kISOChangeNotificationKey;
+extern NSString * const kLensPositionNotificationKey;
+extern NSString * const kWhiteBalanceModeNotificationKey;
+extern NSString * const kWhiteBalanceGainsNotificationKey;
+extern NSString * const kFocusModeNotificationKey;
+extern NSString * const kFilterModeNotificationKey;
+
 //闪光
 typedef enum {
     FlashModeOff          = 0,    
@@ -26,23 +39,20 @@ typedef enum {
 //曝光
 typedef enum {
     ExposureModeLocked                      = 0,
-    ExposureModeAutoExpose                  = 1,
-    ExposureModeContinuousAutoExposure      = 2,
-    ExposureModeCustom                      = 3
+    ExposureModeContinuousAutoExposure      = 1,
+    ExposureModeCustom                      = 2
 }ExposureMode;
 
 //白平衡
 typedef enum {
     WhiteBalanceModeLocked                          = 0,
- //   WhiteBalanceModeAutoWhiteBalance                = 1,
-    WhiteBalanceModeContinuousAutoWhiteBalance      = 2
+    WhiteBalanceModeContinuousAutoWhiteBalance      = 1
 }WhiteBalanceMode;
 
 //聚焦
 typedef enum {
     FocusModeLocked                     = 0,
-    FocusModeAutoFocus                  = 1,
-    FocusModeContinuousAutoFocus        = 2,
+    FocusModeContinuousAutoFocus        = 1,
 
 }FocusMode;
 
@@ -54,6 +64,7 @@ typedef enum {
     ResolutionModeHigh                  = 3,
 }ResolutionMode;
 
+//实时滤镜
 typedef enum {
     FilterShowModeNone                  = 0,
     FilterShowModeCustomFirst           = 1,
@@ -61,13 +72,24 @@ typedef enum {
     FilterShowModeCustomThird           = 3
 }FilterShowMode;
 
+//typedef enum {
+//    ObserverTypeFocusMode               = 0,
+//    ObserverTypeFocusLens               = 1,
+//
+//}ObserverType;
+
+typedef struct {
+    Float64 maxFrameRate;
+    Float64 minFrameRate;
+}FlameRate;
+
 
 typedef void (^CameraImageBlock)(NSData * imageData);
 typedef void (^CameraVideoBlock)(BOOL *isOk);
 
 @interface AVFoundationHandler : NSObject
 {
-    CMBufferQueueRef previewBufferQueue;
+ //   CMBufferQueueRef previewBufferQueue;
 }
 
 @property (nonatomic, strong) CameraImageBlock imageBlock;
@@ -75,8 +97,11 @@ typedef void (^CameraVideoBlock)(BOOL *isOk);
 
 @property (nonatomic, readonly) float minISO;
 @property (nonatomic, readonly) float maxISO;
-@property (nonatomic, readonly) double currentExposureDuration;
 @property (nonatomic, readonly) float currentISOValue;
+@property (nonatomic, readonly) float maxExposureBias;
+@property (nonatomic, readonly) float minExposureBias;
+@property (nonatomic, readonly) float currentExposureBias;
+@property (nonatomic, readonly) double currentExposureDuration;
 @property (nonatomic, readonly) NSInteger numbersOfSupportFormats;
 @property (nonatomic, readonly) FlashMode currentFlashMode;
 @property (nonatomic, readonly) ResolutionMode currentPixel;
@@ -85,6 +110,7 @@ typedef void (^CameraVideoBlock)(BOOL *isOk);
 @property (nonatomic, readonly) WhiteBalanceMode currentWBMode;
 @property (nonatomic, readonly) Float64 activeMaxFrameRate;
 @property (nonatomic, readonly) Float64 activeMinFrameRate;
+@property (nonatomic, readonly) FlameRate currentFrameRate;
 @property (nonatomic, readonly) FilterShowMode currentFilterMode;
 @property (nonatomic, readonly) BOOL curentDoubleExposureState;
 
@@ -92,9 +118,18 @@ typedef void (^CameraVideoBlock)(BOOL *isOk);
 + (instancetype)shareInstance;
 
 
-
+/**
+ *  用于静态图片拍照
+ *
+ *  @param imageBlock
+ */
 - (void)setCameraOKImageBlock:( void(^)(NSData * imageData)) imageBlock;
 
+/**
+ *  用于实时滤镜和双重曝光相机拍照
+ *
+ *  @param videoBlock
+ */
 - (void)setCameraOKVideoBlock:(void(^)(BOOL *isOk)) videoBlock;
 
 /**
@@ -124,7 +159,7 @@ typedef void (^CameraVideoBlock)(BOOL *isOk);
 /**
  *  拍照，还需要添加模式，待定。
  */
-- (void)cameraOK;
+- (void)cameraImageOK;
 
 /**
  *  加滤镜的拍照
@@ -199,9 +234,9 @@ typedef void (^CameraVideoBlock)(BOOL *isOk);
 /**
  *  设置曝光时间
  *
- *  @param duration float [0,1]
+ *  @param duration double [0,1]
  */
-- (void)setExposureDuration:(float)duration;
+- (void)setExposureDuration:(double)duration;
 
 /**
  *  ISO
@@ -211,11 +246,27 @@ typedef void (^CameraVideoBlock)(BOOL *isOk);
 - (void)setISO:(float)isoValue;
 
 /**
+ *  设置色温和色彩
+ *
+ *  @param temperature 色温  【3000，8000】
+ *  @param tint        色彩  【-150，150】
+ */
+- (void)setTemperature:(float)temperature tint:(float)tint;
+
+/**
+ *  曝光档数的目标偏移
+ *
+ *  @param bias bias description
+ */
+- (void)setExposureTargetBias:(float)bias;
+
+
+/**
  *  帧率
  *
  *  @param desiredFrameRate 当前activeFormat，支持的帧率的数值的倒数
  */
-- (void)setFrameRate:(int)desiredFrameRate;
+- (void)setFrameRate:(double)desiredFrameRate;
 
 /**
  *  在设备支持的所有格式中是否 有要设置的帧率的格式，如果有将activeFormat设置为这个格式
@@ -242,11 +293,14 @@ typedef void (^CameraVideoBlock)(BOOL *isOk);
 /**
  *  打开双重曝光
  *
- *  @param isOpenDoubleExposure <#isOpenDoubleExposure description#>
+ *  @param isOpenDoubleExposure
  */
 - (void)openDoubleExposure:(BOOL)isOpenDoubleExposure;
 
 
 
+//- (void)addObserver:(NSObject *)observer selector:(SEL)aSelector dataType:(ObserverType)dataType;
+//
+//- (void)removeObserver:(NSObject *)observer dataType:(ObserverType)dataType;
 
 @end

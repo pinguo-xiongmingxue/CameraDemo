@@ -10,7 +10,7 @@
 
 @protocol CameraViewDelegate <NSObject>
 
-- (void)cameraViewTapedPoint:(CGPoint)point;
+//- (void)cameraViewTapedPoint:(CGPoint)point;
 
 - (void)isFocusOrLightTest:(BOOL *)isFocusOrLight;
 

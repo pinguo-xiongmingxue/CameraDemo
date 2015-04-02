@@ -7,11 +7,21 @@
 //
 
 #import <UIKit/UIKit.h>
-#import "PhotoInfo.h"
 
+@class AlbumCollectionViewCell;
+@protocol AlbumCollectionCellDelegate <NSObject>
+
+- (void)albumCollectionCellDelete:(AlbumCollectionViewCell *)cell withIndexPath:(NSIndexPath *)indexPath;
+
+@end
+
+@class PhotoInfo;
 @interface AlbumCollectionViewCell : UICollectionViewCell
 
+@property (assign, nonatomic) id<AlbumCollectionCellDelegate> delegate;
 @property (weak, nonatomic) IBOutlet UIImageView *photoImageView;
+@property (weak, nonatomic) IBOutlet UIButton *deleteBtn;
+@property (nonatomic, strong) NSIndexPath * indexPath;   //当前的index
 
 - (void)setValueWithMode:(PhotoInfo *)photoInfo;
 

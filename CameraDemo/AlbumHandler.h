@@ -11,7 +11,13 @@
 
 @interface AlbumHandler : NSObject
 
-+ (NSArray *)getPhotosWithAlbum:(NSString *)album;
-
+/**
+ *  取得某个相册所有的照片，按最新在前排序
+ *
+ *  @param albumTitle 相册名称
+ *
+ *  @return 返回照片数组
+ */
++ (NSArray *)getPhotoInfosWithAlbum:(NSString *)albumTitle;
 
 @end

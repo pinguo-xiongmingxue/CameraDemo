@@ -11,6 +11,8 @@
 //相册名
 NSString * const AlbumTitle        = @"我的相册";
 
-
 //相片参数名
 NSString * const PhotoNameKey       = @"photoNameKey";
+
+
+

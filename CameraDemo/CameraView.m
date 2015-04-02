@@ -7,13 +7,13 @@
 //
 
 #import "CameraView.h"
-//#import "AVFoundationHandler.h"
 #import "CommonDefine.h"
+#import "AVFoundationHandler.h"
 
 @interface CameraView ()<UIGestureRecognizerDelegate>
 
-@property (nonatomic, strong) CALayer * focusBox;
-@property (nonatomic, strong) CALayer * exposeBox;
+@property (nonatomic, strong) CALayer * focusBox;   // 聚焦layer
+@property (nonatomic, strong) CALayer * exposeBox;  // 曝光layer
 @end
 
 @implementation CameraView
@@ -26,6 +26,13 @@
     self.userInteractionEnabled = YES;
     UITapGestureRecognizer * tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
     [self addGestureRecognizer:tap];
+    
+    UIPanGestureRecognizer * pan = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(hanldePanGestureRecognizer:)];
+    [pan setDelaysTouchesEnded:NO];
+    [pan setMinimumNumberOfTouches:1];
+    [pan setMaximumNumberOfTouches:1];
+    [pan setDelegate:self];
+    [self addGestureRecognizer:pan];
 }
 
 - (void)buildInterface
@@ -44,16 +51,6 @@
     self.userInteractionEnabled = YES;
     UITapGestureRecognizer * tap = [[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(tapGesture:)];
     [self addGestureRecognizer:tap];
-}
-
-- (CGFloat)selfWidth
-{
-    return self.frame.size.width;
-}
-
-- (CGFloat)selfHeight
-{
-    return self.frame.size.height;
 }
 
 - (CALayer *)focusBox
@@ -121,38 +118,54 @@
         [_delegate isFocusOrLightTest:&isFocusOrLight];
     }
     
+    //YES 测焦   NO  测光
     if (isFocusOrLight) {
-         [self drawLayer:self.focusBox atPointOfInterest:point andRemove:YES];
-    }else{
         [self drawLayer:self.exposeBox atPointOfInterest:point andRemove:YES];
+        [[AVFoundationHandler shareInstance] setExposureX:point.x exposureY:point.y];
+       
+    }else{
+        [self drawLayer:self.focusBox atPointOfInterest:point andRemove:YES];
+        [[AVFoundationHandler shareInstance] setFocus:point.x focusy:point.y];
     }
-   
-    // [self drawLayer:self.exposeBox atPointOfInterest:point andRemove:YES];
-    
-    //[self addfocusView:point];
 }
 
-- (void)addfocusView:(CGPoint)point
+- (void) hanldePanGestureRecognizer:(UIPanGestureRecognizer *)panGestureRecognizer
 {
-    self.foucusImageView = [[UIImageView alloc] initWithFrame:CGRectMake(point.x - 40, point.y - 40, 80, 80)];
-    self.foucusImageView.image = [UIImage imageNamed:@"camera_foucs"];
-    [self addSubview:self.foucusImageView];
-    
-    [UIView animateWithDuration:0.7 animations:^{
-        self.foucusImageView.frame = CGRectMake(point.x-20, point.y-20, 40, 40);
-    } completion:^(BOOL finished) {
-        [UIView animateWithDuration:0.7 animations:^{
-            [self.foucusImageView removeFromSuperview];
-        }];
-    }];
-    
-    if ([_delegate respondsToSelector:@selector(cameraViewTapedPoint:)]) {
-        [_delegate cameraViewTapedPoint:point];
+    BOOL isFocusOrLight = NO;
+    if ([_delegate respondsToSelector:@selector(isFocusOrLightTest:)]) {
+        [_delegate isFocusOrLightTest:&isFocusOrLight];
     }
-   
     
+    UIGestureRecognizerState state = panGestureRecognizer.state;
+    CGPoint touchPoint = [panGestureRecognizer locationInView:self];
+    
+    //YES 测焦   NO  测光
+    if (isFocusOrLight) {
+        [self drawLayer:self.exposeBox atPointOfInterest:touchPoint andRemove:YES];
+        [[AVFoundationHandler shareInstance] setExposureX:touchPoint.x exposureY:touchPoint.y];
+        
+    }else{
+        [self drawLayer:self.focusBox atPointOfInterest:touchPoint andRemove:YES];
+        [[AVFoundationHandler shareInstance] setFocus:touchPoint.x focusy:touchPoint.y];
+    }
+    
+    switch (state) {
+        case UIGestureRecognizerStateBegan:
+            
+            break;
+        case UIGestureRecognizerStateChanged: {
+            break;
+        }
+        case UIGestureRecognizerStateCancelled:
+        case UIGestureRecognizerStateFailed:
+        case UIGestureRecognizerStateEnded: {
+            [self tapGesture:panGestureRecognizer];
+            break;
+        }
+        default:
+            break;
+    }
 }
-
 
 
 

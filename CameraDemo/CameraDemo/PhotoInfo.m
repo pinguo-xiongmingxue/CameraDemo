@@ -2,7 +2,7 @@
 //  PhotoInfo.m
 //  CameraDemo
 //
-//  Created by pinguo on 15/3/25.
+//  Created by pinguo on 15/4/2.
 //  Copyright (c) 2015年 pinguo. All rights reserved.
 //
 
@@ -14,6 +14,7 @@
 
 @dynamic address;
 @dynamic name;
+@dynamic createTime;
 @dynamic photoToAlbum;
 
 @end

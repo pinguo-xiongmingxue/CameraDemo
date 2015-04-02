@@ -2,7 +2,7 @@
 //  AlbumInfo.m
 //  CameraDemo
 //
-//  Created by pinguo on 15/3/25.
+//  Created by pinguo on 15/4/2.
 //  Copyright (c) 2015年 pinguo. All rights reserved.
 //
 

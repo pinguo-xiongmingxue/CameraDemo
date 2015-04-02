@@ -2,7 +2,7 @@
 //  AlbumInfo.h
 //  CameraDemo
 //
-//  Created by pinguo on 15/3/25.
+//  Created by pinguo on 15/4/2.
 //  Copyright (c) 2015年 pinguo. All rights reserved.
 //
 
@@ -13,7 +13,7 @@
 
 @interface AlbumInfo : NSManagedObject
 
-@property (nonatomic, retain) NSString * title;
+@property (nonatomic, retain) NSString * title;  //相册名称
 @property (nonatomic, retain) NSSet *ablumToPhoto;
 @end
 

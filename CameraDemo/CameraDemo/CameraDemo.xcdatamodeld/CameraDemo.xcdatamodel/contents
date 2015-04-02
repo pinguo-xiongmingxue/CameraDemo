@@ -6,11 +6,12 @@
     </entity>
     <entity name="PhotoInfo" representedClassName="PhotoInfo" syncable="YES">
         <attribute name="address" optional="YES" attributeType="String" syncable="YES"/>
+        <attribute name="createTime" optional="YES" attributeType="Date" syncable="YES"/>
         <attribute name="name" optional="YES" attributeType="String" syncable="YES"/>
         <relationship name="photoToAlbum" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="AlbumInfo" inverseName="ablumToPhoto" inverseEntity="AlbumInfo" syncable="YES"/>
     </entity>
     <elements>
-        <element name="PhotoInfo" positionX="-63" positionY="-18" width="128" height="88"/>
         <element name="AlbumInfo" positionX="-63" positionY="0" width="128" height="73"/>
+        <element name="PhotoInfo" positionX="-63" positionY="-18" width="128" height="103"/>
     </elements>
 </model>

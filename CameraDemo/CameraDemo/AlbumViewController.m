@@ -9,11 +9,12 @@
 #import "AlbumViewController.h"
 #import "AlbumCollectionViewCell.h"
 #import "AlbumViewModeClass.h"
+#import "PhotoDetailVC.h"
 
 
-@interface AlbumViewController ()
+@interface AlbumViewController ()<AlbumCollectionCellDelegate>
 
-@property (nonatomic, strong) NSArray * photosArray;
+@property (nonatomic, strong) NSMutableArray * photosArray;
 
 @end
 
@@ -21,17 +22,23 @@
 
 @implementation AlbumViewController
 
+- (id)initWithCoder:(NSCoder *)aDecoder
+{
+    self = [super initWithCoder:aDecoder];
+    if (self) {
+    }
+    return self;
+}
 
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
     
-    
     AlbumViewModeClass * albumViewMode = [[AlbumViewModeClass alloc] init];
     [albumViewMode setBlockWithReturnBlock:^(id returnValue) {
         _photosArray = returnValue;
-      //  NSLog(@"photoArray number: %d",_photosArray.count);
+    
         [self.albumCollectionView reloadData];
     } WithErrorBlock:^(id errorCode) {
         
@@ -53,21 +60,33 @@
 {
     static NSString * collectionCellID = @"AlbumCell";
     AlbumCollectionViewCell * collectionCell = (AlbumCollectionViewCell *)[collectionView dequeueReusableCellWithReuseIdentifier:collectionCellID forIndexPath:indexPath];
-    
+    collectionCell.indexPath = indexPath;
+    collectionCell.delegate = self;
     [collectionCell setValueWithMode:self.photosArray[indexPath.row]];
    
-    
     return collectionCell;
 }
 
 
 - (void)collectionView:(UICollectionView *)collectionView didSelectItemAtIndexPath:(NSIndexPath *)indexPath
 {
-  
-    
+    AlbumViewModeClass * albumViewMode = [[AlbumViewModeClass alloc] init];
+    [albumViewMode photoDetailWithViewController:self withImageArray:_photosArray atIndex:indexPath.row];
 }
 
+#pragma mark - AlbumCollectionCellDelegate
 
+- (void)albumCollectionCellDelete:(AlbumCollectionViewCell *)cell withIndexPath:(NSIndexPath *)indexPath
+{
+   // AlbumCollectionViewCell * ce = (AlbumCollectionViewCell *)[self.albumCollectionView cellForItemAtIndexPath:indexPath];
+    
+     AlbumViewModeClass * albumViewMode = [[AlbumViewModeClass alloc] init];
+    
+    [albumViewMode deletePhotoInfo:[self.photosArray objectAtIndex:indexPath.row]];
+    [self.photosArray removeObjectAtIndex:indexPath.row];
+    [self.albumCollectionView deleteItemsAtIndexPaths:[NSArray arrayWithObject:indexPath]];
+    
+}
 
 
 

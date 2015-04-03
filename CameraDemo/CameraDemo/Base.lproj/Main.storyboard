@@ -194,11 +194,22 @@
                                                     <rect key="frame" x="0.0" y="0.0" width="90" height="120"/>
                                                     <autoresizingMask key="autoresizingMask" widthSizable="YES" heightSizable="YES"/>
                                                 </imageView>
+                                                <button opaque="NO" contentMode="scaleToFill" contentHorizontalAlignment="center" contentVerticalAlignment="center" lineBreakMode="middleTruncation" id="x2Z-IQ-Tcf">
+                                                    <rect key="frame" x="52" y="8" width="30" height="28"/>
+                                                    <autoresizingMask key="autoresizingMask" flexibleMaxX="YES" flexibleMaxY="YES"/>
+                                                    <state key="normal" image="close">
+                                                        <color key="titleShadowColor" white="0.5" alpha="1" colorSpace="calibratedWhite"/>
+                                                    </state>
+                                                    <connections>
+                                                        <action selector="deleteBtnClick:" destination="1GT-KU-I9a" eventType="touchUpInside" id="hcJ-Td-5iP"/>
+                                                    </connections>
+                                                </button>
                                             </subviews>
                                             <color key="backgroundColor" white="0.0" alpha="0.0" colorSpace="calibratedWhite"/>
                                         </view>
                                         <size key="customSize" width="90" height="120"/>
                                         <connections>
+                                            <outlet property="deleteBtn" destination="x2Z-IQ-Tcf" id="Trd-3U-n04"/>
                                             <outlet property="photoImageView" destination="ieA-tT-qFR" id="JUb-9v-6l6"/>
                                         </connections>
                                     </collectionViewCell>

@@ -51,6 +51,11 @@
     
 }
 
+- (NSInteger)numberOfSectionsInCollectionView:(UICollectionView *)collectionView
+{
+    return 1;
+}
+
 - (NSInteger)collectionView:(UICollectionView *)collectionView numberOfItemsInSection:(NSInteger)section
 {
     return [self.photosArray count];
@@ -78,13 +83,16 @@
 
 - (void)albumCollectionCellDelete:(AlbumCollectionViewCell *)cell withIndexPath:(NSIndexPath *)indexPath
 {
-   // AlbumCollectionViewCell * ce = (AlbumCollectionViewCell *)[self.albumCollectionView cellForItemAtIndexPath:indexPath];
+//   AlbumCollectionViewCell * ce = (AlbumCollectionViewCell *)[self.albumCollectionView cellForItemAtIndexPath:indexPath];
+    NSIndexPath * indexPath1 = [self.albumCollectionView indexPathForCell:cell];
+    
     
      AlbumViewModeClass * albumViewMode = [[AlbumViewModeClass alloc] init];
     
-    [albumViewMode deletePhotoInfo:[self.photosArray objectAtIndex:indexPath.row]];
-    [self.photosArray removeObjectAtIndex:indexPath.row];
-    [self.albumCollectionView deleteItemsAtIndexPaths:[NSArray arrayWithObject:indexPath]];
+    [albumViewMode deletePhotoInfo:[self.photosArray objectAtIndex:indexPath1.row]];
+    [self.photosArray removeObjectAtIndex:indexPath1.row];
+    [self.albumCollectionView deleteItemsAtIndexPaths:[NSArray arrayWithObject:indexPath1]];
+    [self.albumCollectionView reloadData];
     
 }
 
